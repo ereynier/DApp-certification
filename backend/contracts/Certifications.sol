@@ -139,7 +139,7 @@ contract Certifications is AccessControl, Maths {
             multiSigSign(multiSigName, msg.sender);
         }
 
-        if ((roleHash != role.ADMIN && multiSig[multiSigName].count >= (roles[role.ADMIN].nb * ceilUDiv(role.PERCENT_TO_GRANT, 100))) ||
+        if ((roleHash != role.ADMIN && multiSig[multiSigName].count >= (roles[role.ADMIN].nb * ceilUDiv(role.PERCENT_TO_REVOKE, 100))) ||
             (roleHash == role.ADMIN && multiSig[multiSigName].count >= ((roles[role.ADMIN].nb - 1) * ceilUDiv(role.PERCENT_TO_REVOKE, 100))))
         {
 
