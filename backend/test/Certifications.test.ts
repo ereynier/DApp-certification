@@ -56,33 +56,35 @@ describe("Certifications", function () {
             await expect(contract.connect(this.owner).grantAnyRole(await contract.CERTIFIER_ADMIN(), this.addr1.address)).to.be.revertedWith(/This address is already a .*/);
         });
 
-        it("Should not give the role CERTIFIER to the address addr2", async function () {
+        it("Should not give the role CERTIFIER to the address addr2 with owner sign (50 / 80%)", async function () {
             expect(await contract.hasRole(await contract.CERTIFIER(), this.addr2.address)).to.equal(false);
             await contract.connect(this.owner).grantAnyRole(await contract.CERTIFIER(), this.addr2.address);
             expect(await contract.hasRole(await contract.CERTIFIER(), this.addr2.address)).to.equal(false);
         });
 
-        it("Should give the role CERTIFIER to the address addr2", async function () {
+        it("Should give the role CERTIFIER to the address addr2 with owner and addr1 sign (100 / 80%)", async function () {
             await contract.connect(this.addr1).grantAnyRole(await contract.CERTIFIER(), this.addr2.address);
             expect(await contract.hasRole(await contract.CERTIFIER(), this.addr2.address)).to.equal(true);
         });
 
-        it("Should not give the role CERTIFIER_ADMIN to the address addr2", async function () {
+        it("Should not give the role CERTIFIER_ADMIN to the address addr2 with only owner sign (50 / 80%)", async function () {
             await contract.connect(this.owner).grantAnyRole(await contract.CERTIFIER_ADMIN(), this.addr2.address);
             expect(await contract.hasRole(await contract.CERTIFIER_ADMIN(), this.addr2.address)).to.equal(false);
         });
-        it("Should give the role CERTIFIER_ADMIN to the address addr2", async function () {
+        it("Should give the role CERTIFIER_ADMIN to the address addr2 with owner and addr1 sign (100 / 80%)", async function () {
             await contract.connect(this.addr1).grantAnyRole(await contract.CERTIFIER_ADMIN(), this.addr2.address);
             expect(await contract.hasRole(await contract.CERTIFIER_ADMIN(), this.addr2.address)).to.equal(true);
         });
-        it("Should not give the role CERTIFIER to the address addr3", async function () {
+        it("Should not give the role CERTIFIER to the address addr3 with only owner and addr1 sign (66 / 80%)", async function () {
             await contract.connect(this.owner).grantAnyRole(await contract.CERTIFIER(), this.addr3.address);
             await contract.connect(this.addr1).grantAnyRole(await contract.CERTIFIER(), this.addr3.address);
             expect(await contract.hasRole(await contract.CERTIFIER(), this.addr3.address)).to.equal(false);
+        });
+        it("Should not give the role CERTIFIER to the address addr3, owner second sign not counting", async function () {
             await contract.connect(this.owner).grantAnyRole(await contract.CERTIFIER(), this.addr3.address);
             expect(await contract.hasRole(await contract.CERTIFIER(), this.addr3.address)).to.equal(false);
         });
-        it("Should give the role CERTIFIER to the address addr3", async function () {
+        it("Should give the role CERTIFIER to the address addr3 with the addr2 sign (+ owner and addr1) (100 / 80%)", async function () {
             await contract.connect(this.addr2).grantAnyRole(await contract.CERTIFIER(), this.addr3.address);
             expect(await contract.hasRole(await contract.CERTIFIER(), this.addr3.address)).to.equal(true);
         });
@@ -99,14 +101,14 @@ describe("Certifications", function () {
             await expect(contract.connect(this.owner).revokeAnyRole(await contract.CERTIFIER_ADMIN(), this.addr3.address)).to.be.revertedWith(/This address is not a .*/);
         });
 
-        it("Should not revoke the role CERTIFIER to the address addr3", async function () {
+        it("Should not revoke the role CERTIFIER to the address addr3 with only owner and addr1 sign", async function () {
             expect(await contract.hasRole(await contract.CERTIFIER(), this.addr3.address)).to.equal(true);
             await contract.connect(this.owner).revokeAnyRole(await contract.CERTIFIER(), this.addr3.address);
             expect(await contract.hasRole(await contract.CERTIFIER(), this.addr3.address)).to.equal(true);
             await contract.connect(this.addr1).revokeAnyRole(await contract.CERTIFIER(), this.addr3.address);
             expect(await contract.hasRole(await contract.CERTIFIER(), this.addr3.address)).to.equal(true);
         });
-        it("Should revoke the role CERTIFIER to the address addr3", async function () {
+        it("Should revoke the role CERTIFIER to the address addr3 with ", async function () {
             await contract.connect(this.addr2).revokeAnyRole(await contract.CERTIFIER(), this.addr3.address);
             expect(await contract.hasRole(await contract.CERTIFIER(), this.addr3.address)).to.equal(false);
         });
