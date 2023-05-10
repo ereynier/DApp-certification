@@ -11,6 +11,7 @@ contract Certifications is AccessControl, Maths {
         uint32 MIN;
         uint32 MAX;
         uint8 PERCENT_TO_GRANT;
+        uint8 PERCENT_TO_REVOKE;
         bytes32 ADMIN;
         bytes32 name;
     }
@@ -67,7 +68,8 @@ contract Certifications is AccessControl, Maths {
             2, 
             MIN_CERTIFIERS_ADMIN, 
             MAX_CERTIFIERS_ADMIN, 
-            PERCENT_TO_GRANT_CERTIFIER_ADMIN, 
+            PERCENT_TO_GRANT_CERTIFIER_ADMIN,
+            PERCENT_TO_REVOKE_CERTIFIER_ADMIN,
             CERTIFIER_ADMIN,
             bytes32(abi.encodePacked("CERTIFIER_ADMIN"))
         );
@@ -78,6 +80,7 @@ contract Certifications is AccessControl, Maths {
             0,
             MAX_CERTIFIERS,
             PERCENT_TO_GRANT_CERTIFIER,
+            PERCENT_TO_REVOKE_CERTIFIER,
             CERTIFIER_ADMIN,
             bytes32(abi.encodePacked("CERTIFIER"))
         );
@@ -92,132 +95,70 @@ contract Certifications is AccessControl, Maths {
         }
     }
 
+    function multiSigSign(bytes32 multiSigName, address sender) internal {
+        require(multiSig[multiSigName].approved[sender] == false, "You already signed this multisig");
+        multiSig[multiSigName].address_id[multiSig[multiSigName].id] = sender;
+        multiSig[multiSigName].id++;
+        multiSig[multiSigName].approved[sender] = true;
+        multiSig[multiSigName].count += 1;
+    }
+
+    function clearMultiSig(bytes32 multiSigName) internal {
+        multiSig[multiSigName].count = 0;
+        for (uint8 i = 0; i < multiSig[multiSigName].id; i++) {
+            multiSig[multiSigName].approved[multiSig[multiSigName].address_id[i]] = false;
+        }
+    }
+
     function grantAnyRole(bytes32 roleHash, address target) external {
         Role storage role = roles[roleHash];
         require(role.MAX > role.nb, string.concat("Max ", string(abi.encodePacked(role.name)), " reached"));
-        require(hasRole(role.ADMIN, msg.sender), "Caller is not a role admin");
+        require(hasRole(role.ADMIN, msg.sender), string.concat("Caller is not a ", string(abi.encodePacked(role.name)), " admin"));
+        require(hasRole(roleHash, target) == false, string.concat("This address is already a ", string(abi.encodePacked(role.name))));
 
-        bytes32 certifierHash = keccak256(abi.encodePacked(target, "GRANT", roleHash));
-        multiSigIdentifier(certifierHash, role.ADMIN);
+        bytes32 multiSigName = keccak256(abi.encodePacked(target, "GRANT", roleHash));
+        multiSigIdentifier(multiSigName, role.ADMIN);
 
-        require(multiSig[certifierHash].approved[msg.sender] == false, "Role already approved");
-        multiSig[certifierHash].address_id[multiSig[certifierHash].id] = msg.sender;
-        multiSig[certifierHash].id++;
-        multiSig[certifierHash].approved[msg.sender] = true;
-        multiSig[certifierHash].count += 1;
+        if (multiSig[multiSigName].approved[msg.sender] == false) {
+            multiSigSign(multiSigName, msg.sender);
+        }
 
-        if (multiSig[certifierHash].count >= (roles[role.ADMIN].nb * ceilUDiv(role.PERCENT_TO_GRANT, 100))) {
-            multiSig[certifierHash].count = 0;
-            for (uint8 i = 0; i < multiSig[certifierHash].id; i++) {
-                multiSig[certifierHash].approved[multiSig[certifierHash].address_id[i]] = false;
-            }
+        if (multiSig[multiSigName].count >= (roles[role.ADMIN].nb * ceilUDiv(role.PERCENT_TO_GRANT, 100))) {
+            clearMultiSig(multiSigName);
             _grantRole(roleHash, target);
             role.nb += 1;
         }
     }
 
-    function grantCertifier(address target) external {
-        require(MAX_CERTIFIERS > certifier_nb, "Max certifiers reached");
-        require(hasRole(CERTIFIER_ADMIN, msg.sender), "Caller is not a certifier admin");
+    function revokeAnyRole(bytes32 roleHash, address target) external {
+        Role storage role = roles[roleHash];
+        require(role.nb > role.MIN, string.concat("Min ", string(abi.encodePacked(role.name)), " reached"));
+        require(hasRole(roleHash, target), string.concat("This address is not a ", string(abi.encodePacked(role.name))));
+        require(hasRole(role.ADMIN, msg.sender), string.concat("Caller is not a ", string(abi.encodePacked(role.name)), " admin"));
 
-        bytes32 certifierHash = keccak256(abi.encodePacked(target, "GRANT_CERTIFIER"));
-        multiSigIdentifier(certifierHash);
-        
-        require(multiSig[certifierHash].approved[msg.sender] == false, "Certifier already approved");
-        multiSig[certifierHash].address_id[multiSig[certifierHash].id] = msg.sender;
-        multiSig[certifierHash].id++;
-        multiSig[certifierHash].approved[msg.sender] = true;
-        multiSig[certifierHash].count += 1;
-        if (multiSig[certifierHash].count >= (certifier_admin_nb * PERCENT_TO_GRANT_CERTIFIER / 100)) {
-            multiSig[certifierHash].count = 0;
-            for (uint8 i = 0; i < multiSig[certifierHash].id; i++) {
-                multiSig[certifierHash].approved[multiSig[certifierHash].address_id[i]] = false;
-            }
-            _grantRole(CERTIFIER, target);
-            certifier_nb += 1;
+        bytes32 multiSigName = keccak256(abi.encodePacked(target, "REVOKE", roleHash));
+        multiSigIdentifier(multiSigName, role.ADMIN);
+
+        if (multiSig[multiSigName].approved[msg.sender] == false) {
+            multiSigSign(multiSigName, msg.sender);
         }
-    }
 
-    function revokeCertifier(address target) external {
-        require(hasRole(CERTIFIER_ADMIN, msg.sender), "Caller is not a certifier admin");
-        require(hasRole(CERTIFIER, target), "This address is not a certifier");
+        if ((roleHash != role.ADMIN && multiSig[multiSigName].count >= (roles[role.ADMIN].nb * ceilUDiv(role.PERCENT_TO_GRANT, 100))) ||
+            (roleHash == role.ADMIN && multiSig[multiSigName].count >= ((roles[role.ADMIN].nb - 1) * ceilUDiv(role.PERCENT_TO_REVOKE, 100))))
+        {
 
-        bytes32 certifierHash = keccak256(abi.encodePacked(target, "REVOKE_CERTIFIER"));
-        multiSigIdentifier(certifierHash);
-        
-        require(multiSig[certifierHash].approved[msg.sender] == false, "Certifier revokation already approved");
-        multiSig[certifierHash].address_id[multiSig[certifierHash].id] = msg.sender;
-        multiSig[certifierHash].id++;
-        multiSig[certifierHash].approved[msg.sender] = true;
-        multiSig[certifierHash].count += 1;
-        if (multiSig[certifierHash].count >= (certifier_admin_nb * PERCENT_TO_REVOKE_CERTIFIER / 100)) {
-            for (i = 0; i < multiSigIdCount; i++) {
-                if (multiSigId[i].role == CERTIFIER) {
+            for (uint i = 0; i < multiSigIdCount; i++) {
+                if (multiSig[multiSigId[i]].approved[target] == true && multiSig[multiSigId[i]].role == roleHash) {
                     multiSig[multiSigId[i]].count -= 1;
                     multiSig[multiSigId[i]].approved[target] = false;
                 }
             }
-            multiSig[certifierHash].count = 0;
-            for (uint8 i = 0; i < multiSig[certifierHash].id; i++) {
-                multiSig[certifierHash].approved[multiSig[certifierHash].address_id[i]] = false;
-            }
-            _revokeRole(CERTIFIER, target);
-            certifier_nb -= 1;
+            
+            clearMultiSig(multiSigName);
+            _revokeRole(roleHash, target);
+            role.nb -= 1;
         }
     }
-
-
-    function grantAdmin(address target) external {
-        require(MAX_CERTIFIERS_ADMIN > certifier_admin_nb, "Max certifiers admin reached");
-        require(hasRole(CERTIFIER_ADMIN, msg.sender), "Caller is not a certifier admin");
-
-        bytes32 certifierHash = keccak256(abi.encodePacked(target, "GRANT_CERTIFIER_ADMIN"));
-        multiSigIdentifier(certifierHash);
-        
-        require(multiSig[certifierHash].approved[msg.sender] == false, "Certifier admin already approved");
-        multiSig[certifierHash].address_id[multiSig[certifierHash].id] = msg.sender;
-        multiSig[certifierHash].id++;
-        multiSig[certifierHash].approved[msg.sender] = true;
-        multiSig[certifierHash].count += 1;
-        if (multiSig[certifierHash].count >= (certifier_admin_nb * PERCENT_TO_GRANT_CERTIFIER_ADMIN / 100)) {
-            multiSig[certifierHash].count = 0;
-            for (uint8 i = 0; i < multiSig[certifierHash].id; i++) {
-                multiSig[certifierHash].approved[multiSig[certifierHash].address_id[i]] = false;
-            }
-            _grantRole(CERTIFIER_ADMIN, target);
-            certifier_admin_nb += 1;
-        }
-    }
-
-    function revokeAdmin(address target) external {
-        require(hasRole(CERTIFIER_ADMIN, msg.sender), "Caller is not a certifier admin");
-        require(hasRole(CERTIFIER_ADMIN, target), "This address is not a certifier admin");
-        require(certifier_admin_nb > MIN_CERTIFIERS_ADMIN, "Min certifiers admin reached");
-
-        bytes32 certifierHash = keccak256(abi.encodePacked(target, "REVOKE_CERTIFIER_ADMIN"));
-        multiSigIdentifier(certifierHash);
-        
-        require(multiSig[certifierHash].approved[msg.sender] == false, "Certifier revokation already approved");
-        multiSig[certifierHash].address_id[multiSig[certifierHash].id] = msg.sender;
-        multiSig[certifierHash].id++;
-        multiSig[certifierHash].approved[msg.sender] = true;
-        multiSig[certifierHash].count += 1;
-        if (multiSig[certifierHash].count >= ((certifier_admin_nb - 1) * PERCENT_TO_REVOKE_CERTIFIER / 100)) {
-            for (i = 0; i < multiSigIdCount; i++) {
-                if (multiSigId[i].role == CERTIFIER_ADMIN) {
-                    multiSig[multiSigId[i]].count -= 1;
-                    multiSig[multiSigId[i]].approved[target] = false;
-                }
-            }
-            multiSig[certifierHash].count = 0;
-            for (uint8 i = 0; i < multiSig[certifierHash].id; i++) {
-                multiSig[certifierHash].approved[multiSig[certifierHash].address_id[i]] = false;
-            }
-            _revokeRole(CERTIFIER_ADMIN, target);
-            certifier_admin_nb -= 1;
-        }
-    }
-
 
     function renounceRole(bytes32, address) public virtual override {
         revert("You can't renounce to you role. Please contact admins");
