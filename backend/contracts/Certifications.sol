@@ -46,10 +46,6 @@ contract Certifications is AccessControl, Maths {
     
     mapping (bytes32 => Role) internal roles;
 
-    
-    uint8 public certifier_nb = 0;
-    uint8 public certifier_admin_nb = 0;
-
     mapping (bytes32 => MultiSig) internal multiSig;
 
     mapping (uint => bytes32) internal multiSigId;
@@ -161,6 +157,6 @@ contract Certifications is AccessControl, Maths {
     }
 
     function renounceRole(bytes32, address) public virtual override {
-        revert("You can't renounce to you role. Please contact admins");
+        revert("You can't renounce to your role. Please contact admins");
     }
 }
