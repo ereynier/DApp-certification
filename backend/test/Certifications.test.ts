@@ -114,4 +114,33 @@ describe("Certifications", function () {
         });
     });
 
+    // HERE: owner and addr1 are CERTIFIER_ADMIN, addr2 is CERTIFIER_ADMIN and CERTIFIER
+    describe("multiSig with admin removed", function () {
+        it("Should not give the role CERTIFIER_ADMIN to the address addr3 with only owner and addr1 sign (66 / 80%)", async function () {
+            await contract.connect(this.owner).grantAnyRole(await contract.CERTIFIER_ADMIN(), this.addr3.address);
+            await contract.connect(this.addr1).grantAnyRole(await contract.CERTIFIER_ADMIN(), this.addr3.address);
+            expect(await contract.hasRole(await contract.CERTIFIER_ADMIN(), this.addr3.address)).to.equal(false);
+        });
+        it("Should now give the role CERTIFIER_ADMIN to the address addr3, owner second sign refresh multiSig after addr2 removed from CERTIFIER_ADMIN", async function () {
+            await contract.connect(this.owner).revokeAnyRole(await contract.CERTIFIER_ADMIN(), this.addr2.address);
+            await contract.connect(this.addr1).revokeAnyRole(await contract.CERTIFIER_ADMIN(), this.addr2.address);
+            await contract.connect(this.owner).grantAnyRole(await contract.CERTIFIER_ADMIN(), this.addr3.address);
+            expect(await contract.hasRole(await contract.CERTIFIER_ADMIN(), this.addr3.address)).to.equal(true);
+        });
+        it("Should not remove the role CERTIFIER to addr2 with owner and addr3 sign (66 / 80%) then addr3 removed from CERTIFIER_ADMIN and owner resign (50 / 80%)", async function () {
+            await contract.connect(this.owner).revokeAnyRole(await contract.CERTIFIER(), this.addr2.address);
+            await contract.connect(this.addr3).revokeAnyRole(await contract.CERTIFIER(), this.addr2.address);
+            expect(await contract.hasRole(await contract.CERTIFIER(), this.addr2.address)).to.equal(true);
+            await contract.connect(this.owner).revokeAnyRole(await contract.CERTIFIER_ADMIN(), this.addr3.address);
+            await contract.connect(this.addr1).revokeAnyRole(await contract.CERTIFIER_ADMIN(), this.addr3.address);
+            expect(await contract.hasRole(await contract.CERTIFIER_ADMIN(), this.addr3.address)).to.equal(false);
+            await contract.connect(this.owner).revokeAnyRole(await contract.CERTIFIER(), this.addr2.address);
+            expect(await contract.hasRole(await contract.CERTIFIER(), this.addr2.address)).to.equal(true);
+        });
+        it("Should give the role CERTIFIER to addr2 with owner and addr1 sign (100 / 80%)", async function () {
+            await contract.connect(this.addr1).revokeAnyRole(await contract.CERTIFIER(), this.addr2.address);
+            expect(await contract.hasRole(await contract.CERTIFIER(), this.addr2.address)).to.equal(false);
+        });
+    });
+
 });

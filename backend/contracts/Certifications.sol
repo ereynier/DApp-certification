@@ -2,9 +2,10 @@
 pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "./utils/maths.sol";
+import "./utils/Maths.sol";
+import "./utils/MultiSigWithRole.sol";
 
-contract Certifications is AccessControl, Maths {
+contract Certifications is AccessControl, MultiSigWithRole, Maths {
 
     struct Role {
         uint32 nb;
@@ -14,15 +15,6 @@ contract Certifications is AccessControl, Maths {
         uint8 PERCENT_TO_REVOKE;
         bytes32 ADMIN;
         bytes32 name;
-    }
-
-    struct MultiSig {
-        bool created;
-        bytes32 role;
-        uint8 count;
-        uint8 id;
-        mapping (address => bool) approved;
-        mapping (uint => address) address_id;
     }
 
     bytes32 public constant CERTIFIER = keccak256("CERTIFIER");
@@ -46,7 +38,7 @@ contract Certifications is AccessControl, Maths {
     
     mapping (bytes32 => Role) internal roles;
 
-    mapping (bytes32 => MultiSig) internal multiSig;
+    mapping (bytes32 => MultiSigRole) internal multiSig;
 
     mapping (uint => bytes32) internal multiSigId;
 
@@ -91,21 +83,6 @@ contract Certifications is AccessControl, Maths {
         }
     }
 
-    function multiSigSign(bytes32 multiSigName, address sender) internal {
-        require(multiSig[multiSigName].approved[sender] == false, "You already signed this multisig");
-        multiSig[multiSigName].address_id[multiSig[multiSigName].id] = sender;
-        multiSig[multiSigName].id++;
-        multiSig[multiSigName].approved[sender] = true;
-        multiSig[multiSigName].count += 1;
-    }
-
-    function clearMultiSig(bytes32 multiSigName) internal {
-        multiSig[multiSigName].count = 0;
-        for (uint8 i = 0; i < multiSig[multiSigName].id; i++) {
-            multiSig[multiSigName].approved[multiSig[multiSigName].address_id[i]] = false;
-        }
-    }
-
     function grantAnyRole(bytes32 roleHash, address target) external {
         Role storage role = roles[roleHash];
         require(role.MAX > role.nb, string.concat("Max ", string(abi.encodePacked(role.name)), " reached"));
@@ -116,11 +93,11 @@ contract Certifications is AccessControl, Maths {
         multiSigIdentifier(multiSigName, role.ADMIN);
 
         if (multiSig[multiSigName].approved[msg.sender] == false) {
-            multiSigSign(multiSigName, msg.sender);
+            multiSigRoleSign(multiSig[multiSigName], msg.sender);
         }
 
         if (multiSig[multiSigName].count >= (roles[role.ADMIN].nb * ceilUDiv(role.PERCENT_TO_GRANT, 100))) {
-            clearMultiSig(multiSigName);
+            clearMultiSigRole(multiSig[multiSigName]);
             _grantRole(roleHash, target);
             role.nb += 1;
         }
@@ -136,7 +113,7 @@ contract Certifications is AccessControl, Maths {
         multiSigIdentifier(multiSigName, role.ADMIN);
 
         if (multiSig[multiSigName].approved[msg.sender] == false) {
-            multiSigSign(multiSigName, msg.sender);
+            multiSigRoleSign(multiSig[multiSigName], msg.sender);
         }
 
         if ((roleHash != role.ADMIN && multiSig[multiSigName].count >= (roles[role.ADMIN].nb * ceilUDiv(role.PERCENT_TO_REVOKE, 100))) ||
@@ -150,7 +127,7 @@ contract Certifications is AccessControl, Maths {
                 }
             }
             
-            clearMultiSig(multiSigName);
+            clearMultiSigRole(multiSig[multiSigName]);
             _revokeRole(roleHash, target);
             role.nb -= 1;
         }

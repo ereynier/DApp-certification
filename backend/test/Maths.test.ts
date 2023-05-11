@@ -2,7 +2,7 @@ import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect, assert } from "chai";
 import { ethers } from "hardhat";
-import { Maths } from "../typechain-types/contracts/utils/maths.sol/Maths";
+import { Maths } from "../typechain-types/contracts/utils/Maths";
 
 describe("Maths", function () {
     let contract : Maths;
