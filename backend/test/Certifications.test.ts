@@ -162,6 +162,20 @@ describe("Certifications", function () {
         });
         // HERE: owner, addr1 and addr3 are CERTIFIER_ADMIN, addr2 is CERTIFIER
     });
+    describe("multiSig with admin removed (grantAny)", function () {
+        it("Should not count the owner sign after he removed from grant CERTIFIER to addr3", async function () {
+            await contract.connect(this.owner).grantAnyRole(await contract.CERTIFIER(), this.addr3.address, true);
+            await contract.connect(this.addr1).grantAnyRole(await contract.CERTIFIER(), this.addr3.address, true);
+            await contract.connect(this.owner).grantAnyRole(await contract.CERTIFIER(), this.addr3.address, false);
+            await contract.connect(this.addr3).grantAnyRole(await contract.CERTIFIER(), this.addr3.address, true);
+            expect(await contract.hasRole(await contract.CERTIFIER(), this.addr3.address)).to.equal(false);
+            await contract.connect(this.owner).grantAnyRole(await contract.CERTIFIER(), this.addr3.address, true);
+            expect(await contract.hasRole(await contract.CERTIFIER(), this.addr3.address)).to.equal(true);
+            await contract.connect(this.owner).revokeAnyRole(await contract.CERTIFIER(), this.addr3.address, true);
+            await contract.connect(this.addr1).revokeAnyRole(await contract.CERTIFIER(), this.addr3.address, true);
+            await contract.connect(this.addr3).revokeAnyRole(await contract.CERTIFIER(), this.addr3.address, true);
+        });
+    });
     describe("Remove Sign", function () {
         it("Should not revoke addr2 to CERTIFIER with owner sign, addr1 sign, owner unsign, addr3 sign (66 / 80%)", async function () {
             contract.connect(this.owner).revokeAnyRole(await contract.CERTIFIER(), this.addr2.address, true);
@@ -179,8 +193,19 @@ describe("Certifications", function () {
     });
 
     describe("Certify", function () {
-        
-    
+        it("Should create a certification", async function () {
+            await expect(contract.connect(this.addr2).certify(105, "George", "Pedro", 1683812617, 1, 2, 1)).to.emit(contract, "certificationEmited").withArgs(105, 1, 2, 1);
+            expect((await contract.certificates(ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [105,1,2,1]))).id).to.deep.equal(105);
+            expect((await contract.certificates(ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [105,1,2,1]))).appreciation).to.deep.equal(1);
+            expect((await contract.certificates(ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [105,1,2,1]))).degree).to.deep.equal(2);
+            expect((await contract.certificates(ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [105,1,2,1]))).program).to.deep.equal(1);
+        });
+        it("Should revert with message 'Caller is not a certifier'", async function () {
+            await expect(contract.connect(this.owner).certify(106, "George", "Pedro", 1683812617, 1, 2, 1)).to.be.revertedWith(/Caller is not a certifier/);
+        });
+        it("Should revert with message 'This certification already exists'", async function () {
+            await expect(contract.connect(this.addr2).certify(105, "George", "Pedro", 1683812617, 1, 2, 1)).to.be.revertedWith(/This certificate already exists/);
+        });
     });
 
 });

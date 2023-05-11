@@ -217,6 +217,7 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths {
         require(app >= appreciation.A && app <= appreciation.D, "Appreciation is not valid");
         require(deg >= degree.BACHELOR && deg <= degree.PHD, "Degree is not valid");
         require(prog >= program.COMPUTER_SCIENCE && prog <= program.OTHER, "Program is not valid");
+        require(certificates[keccak256(abi.encodePacked(studentId, app, deg, prog))].validity == false, "This certificate already exists");
 
         bytes32 multiSigName = keccak256(abi.encodePacked(studentId, "CERTIFY", app, deg, prog));
         multiSigIdentifier(multiSigName, CERTIFIER, string.concat("Certify ", string(abi.encodePacked(studentId)), " ", string(abi.encodePacked(app)), " ", string(abi.encodePacked(deg)), " ", string(abi.encodePacked(prog))));
