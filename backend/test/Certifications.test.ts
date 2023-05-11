@@ -194,18 +194,66 @@ describe("Certifications", function () {
 
     describe("Certify", function () {
         it("Should create a certification", async function () {
-            await expect(contract.connect(this.addr2).certify(105, "George", "Pedro", 1683812617, 1, 2, 1)).to.emit(contract, "certificationEmited").withArgs(105, 1, 2, 1);
+            await expect(contract.connect(this.addr2).certify(105, "George", "Pedro", 1683812617, 1, 2, 1, true)).to.emit(contract, "certificationEmited").withArgs(105, 1, 2, 1);
             expect((await contract.certificates(ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [105,1,2,1]))).id).to.deep.equal(105);
             expect((await contract.certificates(ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [105,1,2,1]))).appreciation).to.deep.equal(1);
             expect((await contract.certificates(ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [105,1,2,1]))).degree).to.deep.equal(2);
             expect((await contract.certificates(ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [105,1,2,1]))).program).to.deep.equal(1);
         });
         it("Should revert with message 'Caller is not a certifier'", async function () {
-            await expect(contract.connect(this.owner).certify(106, "George", "Pedro", 1683812617, 1, 2, 1)).to.be.revertedWith(/Caller is not a certifier/);
+            await expect(contract.connect(this.owner).certify(106, "George", "Pedro", 1683812617, 1, 2, 1, true)).to.be.revertedWith(/Caller is not a certifier/);
         });
         it("Should revert with message 'This certification already exists'", async function () {
-            await expect(contract.connect(this.addr2).certify(105, "George", "Pedro", 1683812617, 1, 2, 1)).to.be.revertedWith(/This certificate already exists/);
+            await expect(contract.connect(this.addr2).certify(105, "George", "Pedro", 1683812617, 1, 2, 1, true)).to.be.revertedWith(/This certificate already exists/);
         });
+        it("Should not approve the certification with addr2 remove his sign and addr3 sign (50 / 51%)", async function () {
+            await contract.connect(this.owner).grantAnyRole(await contract.CERTIFIER(), this.addr3.address, true);
+            await contract.connect(this.addr1).grantAnyRole(await contract.CERTIFIER(), this.addr3.address, true);
+            await contract.connect(this.addr3).grantAnyRole(await contract.CERTIFIER(), this.addr3.address, true);
+            expect(await contract.hasRole(await contract.CERTIFIER(), this.addr3.address)).to.equal(true);
+            await contract.connect(this.addr2).certify(106, "Pamela", "Anderson", 1683812618, 3, 2, 1, true);
+            expect((await contract.certificates(ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [106,3,2,1]))).id).to.deep.equal(0);
+            await contract.connect(this.addr2).certify(106, "Pamela", "Anderson", 1683812618, 3, 2, 1, false);
+            await contract.connect(this.addr3).certify(106, "Pamela", "Anderson", 1683812618, 3, 2, 1, true);
+            expect((await contract.certificates(ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [106,3,2,1]))).id).to.deep.equal(0);
+        });
+        it("Should approve the certification with addr2 sign and addr3 sign (100 / 51%)", async function () {
+            await contract.connect(this.addr2).certify(106, "Pamela", "Anderson", 1683812618, 3, 2, 1, true);
+            expect((await contract.certificates(ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [106,3,2,1]))).id).to.deep.equal(106);
+        });
+    });
+    describe("Delete certificate", function () {
+        it("Should revert with message 'Caller is not a certifier'", async function () {
+            await expect(contract.connect(this.owner).deleteCertificate(106, 3, 2, 1, true)).to.be.revertedWith(/Caller is not a certifier/);
+        });
+        it("Should revert with message 'This certification does not exist'", async function () {
+            await expect(contract.connect(this.addr2).deleteCertificate(107, 3, 2, 1, true)).to.be.revertedWith(/This certificate doesn't exist/);
+            await expect(contract.connect(this.addr2).deleteCertificate(106, 1, 2, 1, true)).to.be.revertedWith(/This certificate doesn't exist/);
+            await expect(contract.connect(this.addr2).deleteCertificate(106, 0, 2, 1, true)).to.be.revertedWith(/This certificate doesn't exist/);
+            await expect(contract.connect(this.addr2).deleteCertificate(106, 3, 0, 1, true)).to.be.revertedWith(/This certificate doesn't exist/);
+            await expect(contract.connect(this.addr2).deleteCertificate(106, 3, 2, 5, true)).to.be.revertedWith(/This certificate doesn't exist/);
+        });
+        
+        it("Should delete the certification", async function () {
+            await contract.connect(this.addr2).deleteCertificate(106, 3, 2, 1, true);
+            expect((await contract.certificates(ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [106,3,2,1]))).validity).to.deep.equal(true);
+            await contract.connect(this.addr3).deleteCertificate(106, 3, 2, 1, true);
+            expect((await contract.certificates(ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [106,3,2,1]))).id).to.deep.equal(106);
+            expect((await contract.certificates(ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [106,3,2,1]))).validity).to.deep.equal(false);
+        });
+        it("Should not delete the certification with addr2 remove his sign and addr3 sign (50 / 51%)", async function () {
+            await contract.connect(this.addr2).certify(110, "Salut", "Sanchez", 1683812, 0, 0, 1, true);
+            await contract.connect(this.addr3).certify(110, "Salut", "Sanchez", 1683812, 0, 0, 1, true);
+            expect((await contract.certificates(ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [110,0,0,1]))).id).to.deep.equal(110);
+            expect((await contract.certificates(ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [110,0,0,1]))).validity).to.deep.equal(true);
+            await contract.connect(this.addr2).deleteCertificate(110, 0, 0, 1, true);
+            expect((await contract.certificates(ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [110,0,0,1]))).validity).to.deep.equal(true);
+            await contract.connect(this.addr2).deleteCertificate(110, 0, 0, 1, false);
+            await contract.connect(this.addr3).deleteCertificate(110, 0, 0, 1, true);
+            expect((await contract.certificates(ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [110,0,0,1]))).validity).to.deep.equal(true);
+            await contract.connect(this.addr3).deleteCertificate(110, 0, 0, 1, false);
+        });
+
     });
 
 });

@@ -137,7 +137,7 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths {
         }
     }
 
-    function grantAnyRole(bytes32 roleHash, address target, bool sign) external {
+    function grantAnyRole(bytes32 roleHash, address target, bool approve) external {
         Role storage role = roles[roleHash];
         require(role.MAX > role.nb, string.concat("Max ", string(abi.encodePacked(role.name)), " reached"));
         require(hasRole(role.ADMIN, msg.sender), string.concat("Caller is not a ", string(abi.encodePacked(role.name)), " admin"));
@@ -146,10 +146,10 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths {
         bytes32 multiSigName = keccak256(abi.encodePacked(target, "GRANT", roleHash));
         multiSigIdentifier(multiSigName, role.ADMIN, string.concat("Grant ", string(abi.encodePacked(role.name)), " ", string(abi.encodePacked(target))));
 
-        if (sign && multiSig[multiSigName].approved[msg.sender] == false) {
+        if (approve && multiSig[multiSigName].approved[msg.sender] == false) {
             multiSigRoleSign(multiSig[multiSigName], msg.sender);
             emit multiSigSigned(multiSigName);
-        } else if (sign == false) {
+        } else if (approve == false) {
             multiSigRoleUnsign(multiSig[multiSigName], msg.sender);
             emit multiSigSigned(multiSigName);
         }
@@ -162,7 +162,7 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths {
         }
     }
 
-    function revokeAnyRole(bytes32 roleHash, address target, bool sign) external {
+    function revokeAnyRole(bytes32 roleHash, address target, bool approve) external {
         Role storage role = roles[roleHash];
         require(role.nb > role.MIN, string.concat("Min ", string(abi.encodePacked(role.name)), " reached"));
         require(hasRole(roleHash, target), string.concat("This address is not a ", string(abi.encodePacked(role.name))));
@@ -171,10 +171,10 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths {
         bytes32 multiSigName = keccak256(abi.encodePacked(target, "REVOKE", roleHash));
         multiSigIdentifier(multiSigName, role.ADMIN, string.concat("Revoke ", string(abi.encodePacked(role.name)), " ", string(abi.encodePacked(target))));
 
-        if (sign && multiSig[multiSigName].approved[msg.sender] == false) {
+        if (approve && multiSig[multiSigName].approved[msg.sender] == false) {
             multiSigRoleSign(multiSig[multiSigName], msg.sender);
             emit multiSigSigned(multiSigName);
-        } else if (sign == false) {
+        } else if (approve == false) {
             multiSigRoleUnsign(multiSig[multiSigName], msg.sender);
             emit multiSigSigned(multiSigName);
         }
@@ -212,18 +212,21 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths {
         emit certificationEmited(studentId, app, deg, prog);
     }
 
-    function certify(uint studentId, string memory studentFirstname, string memory studentLastname, uint studentBirthdate, appreciation app, degree deg, program prog) external {
+    function certify(uint studentId, string memory studentFirstname, string memory studentLastname, uint studentBirthdate, appreciation app, degree deg, program prog, bool approve) external {
         require(hasRole(CERTIFIER, msg.sender), "Caller is not a certifier");
         require(app >= appreciation.A && app <= appreciation.D, "Appreciation is not valid");
         require(deg >= degree.BACHELOR && deg <= degree.PHD, "Degree is not valid");
         require(prog >= program.COMPUTER_SCIENCE && prog <= program.OTHER, "Program is not valid");
         require(certificates[keccak256(abi.encodePacked(studentId, app, deg, prog))].validity == false, "This certificate already exists");
 
-        bytes32 multiSigName = keccak256(abi.encodePacked(studentId, "CERTIFY", app, deg, prog));
-        multiSigIdentifier(multiSigName, CERTIFIER, string.concat("Certify ", string(abi.encodePacked(studentId)), " ", string(abi.encodePacked(app)), " ", string(abi.encodePacked(deg)), " ", string(abi.encodePacked(prog))));
+        bytes32 multiSigName = keccak256(abi.encodePacked(studentId, studentFirstname, studentLastname, studentBirthdate, "CERTIFY", app, deg, prog));
+        multiSigIdentifier(multiSigName, CERTIFIER, string.concat("Certify ", string(abi.encodePacked(studentId)), " ", string(abi.encodePacked(studentFirstname)), " ", string(abi.encodePacked(studentLastname)), " ", string(abi.encodePacked(studentBirthdate)), " ",  string(abi.encodePacked(app)), " ", string(abi.encodePacked(deg)), " ", string(abi.encodePacked(prog))));
 
-        if (multiSig[multiSigName].approved[msg.sender] == false) {
+        if (approve && multiSig[multiSigName].approved[msg.sender] == false) {
             multiSigRoleSign(multiSig[multiSigName], msg.sender);
+            emit multiSigSigned(multiSigName);
+        } else if (approve == false) {
+            multiSigRoleUnsign(multiSig[multiSigName], msg.sender);
             emit multiSigSigned(multiSigName);
         }
 
@@ -231,6 +234,31 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths {
             clearMultiSigRole(multiSig[multiSigName]);
             emit multiSigCleared(multiSigName);
             createCertificate(studentId, bytes32(abi.encodePacked(studentFirstname)), bytes32(abi.encodePacked(studentLastname)), studentBirthdate, app, deg, prog);
+        }
+    }
+
+    function deleteCertificate(uint studentId, appreciation app, degree deg, program prog, bool approve) external {
+        require(hasRole(CERTIFIER, msg.sender), "Caller is not a certifier");
+        require(app >= appreciation.A && app <= appreciation.D, "Appreciation is not valid");
+        require(deg >= degree.BACHELOR && deg <= degree.PHD, "Degree is not valid");
+        require(prog >= program.COMPUTER_SCIENCE && prog <= program.OTHER, "Program is not valid");
+        require(certificates[keccak256(abi.encodePacked(studentId, app, deg, prog))].validity == true, "This certificate doesn't exist");
+
+        bytes32 multiSigName = keccak256(abi.encodePacked(studentId, "EDIT", app, deg, prog));
+        multiSigIdentifier(multiSigName, CERTIFIER, string.concat("Edit ", string(abi.encodePacked(studentId)), " ", string(abi.encodePacked(app)), " ", string(abi.encodePacked(deg)), " ", string(abi.encodePacked(prog))));
+
+        if (approve && multiSig[multiSigName].approved[msg.sender] == false) {
+            multiSigRoleSign(multiSig[multiSigName], msg.sender);
+            emit multiSigSigned(multiSigName);
+        } else if (approve == false) {
+            multiSigRoleUnsign(multiSig[multiSigName], msg.sender);
+            emit multiSigSigned(multiSigName);
+        }
+
+        if (multiSig[multiSigName].count >= (ceilUDiv(roles[CERTIFIER].nb * PERCENT_TO_EDIT_CERTIFICATE, 100))) {
+            clearMultiSigRole(multiSig[multiSigName]);
+            emit multiSigCleared(multiSigName);
+            certificates[keccak256(abi.encodePacked(studentId, app, deg, prog))].validity = false;
         }
     }
 
