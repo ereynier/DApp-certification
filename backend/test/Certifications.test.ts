@@ -403,7 +403,7 @@ describe("Certifications", function () {
             expect((await contract.certificates(ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [110,0,0,1]))).validity).to.deep.equal(true);
             await contract.connect(this.addr3).deleteCertificate(110, 0, 0, 1, false);
         });
-        it("Should recreate the certificate if it was deleted", async function () {
+        it("Should recreate the certificate that was deleted", async function () {
             expect((await contract.certificates(ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [106,3,2,1]))).validity).to.deep.equal(false);
             await contract.connect(this.addr2).certify(106, 3, 2, 1, true);
             await contract.connect(this.addr3).certify(106, 3, 2, 1, true);
@@ -411,5 +411,18 @@ describe("Certifications", function () {
         });
     });
 
-
+    describe("getCertificatesByStudent", function () {
+        it("Should revert with message 'This student doesn't exist'", async function () {
+            await expect(contract.connect(this.addr2).getCertificatesByStudent(107)).to.be.revertedWith(/This student doesn't exist/);
+        });
+        it("Should get the student's certifications", async function () {
+            expect(await contract.connect(this.addr2).getCertificatesByStudent(110)).to.deep.equal([ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [110,0,0,1])]);
+        });
+        it("Should get the student's certifications", async function () {
+            await contract.connect(this.addr2).certify(106, 3, 0, 1, true);
+            await contract.connect(this.addr3).certify(106, 3, 0, 1, true);
+            let certificates = [...new Set(await contract.connect(this.addr2).getCertificatesByStudent(106))];
+            expect(certificates).to.deep.equal([ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [106,3,2,1]), ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [106,3,0,1])]);
+        });
+    });
 });

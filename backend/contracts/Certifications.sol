@@ -97,6 +97,8 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths, Students {
 
     mapping (bytes32 => Certificate) public certificates;
 
+    mapping (uint => bytes32[]) public certificatesByStudent;
+
 
     constructor(address certifier_admin1, address certifier_admin2) {
         require(certifier_admin1 != address(0), "Certifier admin1 address cannot be 0");
@@ -248,6 +250,7 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths, Students {
             true,
             studentId
         );
+        certificatesByStudent[studentId].push(keccak256(abi.encodePacked(studentId, app, deg, prog)));
         emit certificationEmited(studentId, app, deg, prog);
     }
 
@@ -301,6 +304,11 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths, Students {
             emit multiSigCleared(multiSigName);
             certificates[keccak256(abi.encodePacked(studentId, app, deg, prog))].validity = false;
         }
+    }
+
+    function getCertificatesByStudent(uint _id) public view returns (bytes32[] memory) {
+        require(students[_id].id != 0, "This student doesn't exist");
+        return certificatesByStudent[_id];
     }
 
     function renounceRole(bytes32, address) public virtual override {

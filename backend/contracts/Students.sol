@@ -16,8 +16,15 @@ contract Students {
 
     mapping (uint => Student) public students;
 
+    uint[] public studentsIds;
+
     function addStudent(uint _id, string memory _firstname, string memory _lastname , uint256 _birthdate) internal {
+        require(students[_id].id == 0, "Student already exists");
+        require(_id != 0, "Id can't be 0");
+
         students[_id] = Student(_id, _firstname, _lastname, _birthdate);
+        studentsIds.push(_id);
+
         emit StudentAdded(_id, _firstname, _lastname, _birthdate);
     }
 
@@ -28,6 +35,12 @@ contract Students {
 
     function deleteStudent(uint256 _id) internal {
         delete students[_id];
+        for (uint i = 0; i < studentsIds.length; i++) {
+            if (studentsIds[i] == _id) {
+                studentsIds[i] = 0;
+                break;
+            }
+        }
         emit StudentDeleted(_id);
     }
 
