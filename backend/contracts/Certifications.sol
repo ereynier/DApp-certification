@@ -62,10 +62,7 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths {
         bool validity;
 
         // STUDENT INFO
-        uint id;
-        bytes32 firstname;
-        bytes32 lastname;
-        uint birthdate;
+        uint stud_id;
     }
 
     bytes32 public constant CERTIFIER = keccak256("CERTIFIER");
@@ -197,30 +194,27 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths {
         }
     }
 
-    function createCertificate(uint studentId, bytes32 studentFirstname, bytes32 studentLastname, uint studentBirthdate, appreciation app, degree deg, program prog) internal {
+    function createCertificate(uint studentId, appreciation app, degree deg, program prog) internal {
         certificates[keccak256(abi.encodePacked(studentId, app, deg, prog))] = Certificate(
             app,
             deg,
             prog,
             block.timestamp,
             true,
-            studentId,
-            studentFirstname,
-            studentLastname,
-            studentBirthdate
+            studentId
         );
         emit certificationEmited(studentId, app, deg, prog);
     }
 
-    function certify(uint studentId, string memory studentFirstname, string memory studentLastname, uint studentBirthdate, appreciation app, degree deg, program prog, bool approve) external {
+    function certify(uint studentId, appreciation app, degree deg, program prog, bool approve) external {
         require(hasRole(CERTIFIER, msg.sender), "Caller is not a certifier");
         require(app >= appreciation.A && app <= appreciation.D, "Appreciation is not valid");
         require(deg >= degree.BACHELOR && deg <= degree.PHD, "Degree is not valid");
         require(prog >= program.COMPUTER_SCIENCE && prog <= program.OTHER, "Program is not valid");
         require(certificates[keccak256(abi.encodePacked(studentId, app, deg, prog))].validity == false, "This certificate already exists");
 
-        bytes32 multiSigName = keccak256(abi.encodePacked(studentId, studentFirstname, studentLastname, studentBirthdate, "CERTIFY", app, deg, prog));
-        multiSigIdentifier(multiSigName, CERTIFIER, string.concat("Certify ", string(abi.encodePacked(studentId)), " ", string(abi.encodePacked(studentFirstname)), " ", string(abi.encodePacked(studentLastname)), " ", string(abi.encodePacked(studentBirthdate)), " ",  string(abi.encodePacked(app)), " ", string(abi.encodePacked(deg)), " ", string(abi.encodePacked(prog))));
+        bytes32 multiSigName = keccak256(abi.encodePacked(studentId, app, deg, prog, "CERTIFY"));
+        multiSigIdentifier(multiSigName, CERTIFIER, string.concat("Certify ", string(abi.encodePacked(studentId)), " ",  string(abi.encodePacked(app)), " ", string(abi.encodePacked(deg)), " ", string(abi.encodePacked(prog))));
 
         if (approve && multiSig[multiSigName].approved[msg.sender] == false) {
             multiSigRoleSign(multiSig[multiSigName], msg.sender);
@@ -233,7 +227,7 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths {
         if (multiSig[multiSigName].count >= (ceilUDiv(roles[CERTIFIER].nb * PERCENT_TO_CERTIFY, 100))) {
             clearMultiSigRole(multiSig[multiSigName]);
             emit multiSigCleared(multiSigName);
-            createCertificate(studentId, bytes32(abi.encodePacked(studentFirstname)), bytes32(abi.encodePacked(studentLastname)), studentBirthdate, app, deg, prog);
+            createCertificate(studentId, app, deg, prog);
         }
     }
 
@@ -244,8 +238,8 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths {
         require(prog >= program.COMPUTER_SCIENCE && prog <= program.OTHER, "Program is not valid");
         require(certificates[keccak256(abi.encodePacked(studentId, app, deg, prog))].validity == true, "This certificate doesn't exist");
 
-        bytes32 multiSigName = keccak256(abi.encodePacked(studentId, "EDIT", app, deg, prog));
-        multiSigIdentifier(multiSigName, CERTIFIER, string.concat("Edit ", string(abi.encodePacked(studentId)), " ", string(abi.encodePacked(app)), " ", string(abi.encodePacked(deg)), " ", string(abi.encodePacked(prog))));
+        bytes32 multiSigName = keccak256(abi.encodePacked(studentId, app, deg, prog, "DELETE"));
+        multiSigIdentifier(multiSigName, CERTIFIER, string.concat("Delete ", string(abi.encodePacked(studentId)), " ", string(abi.encodePacked(app)), " ", string(abi.encodePacked(deg)), " ", string(abi.encodePacked(prog))));
 
         if (approve && multiSig[multiSigName].approved[msg.sender] == false) {
             multiSigRoleSign(multiSig[multiSigName], msg.sender);
