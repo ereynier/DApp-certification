@@ -4,8 +4,9 @@ pragma solidity ^0.8.19;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./utils/Maths.sol";
 import "./utils/MultiSigWithRole.sol";
+import "./Students.sol";
 
-contract Certifications is AccessControl, MultiSigWithRole, Maths {
+contract Certifications is AccessControl, MultiSigWithRole, Maths, Students {
 
     event multiSigSigned(bytes32 multiSigName);
     event multiSigCleared(bytes32 multiSigName);
@@ -58,7 +59,7 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths {
         appreciation appreciation;
         degree degree;
         program program;
-        uint emition_date;
+        uint creation_date;
         bool validity;
 
         // STUDENT INFO
@@ -82,6 +83,8 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths {
 
     uint8 public constant PERCENT_TO_CERTIFY = 51;
     uint8 public constant PERCENT_TO_EDIT_CERTIFICATE = 80;
+
+    uint8 public constant PERCENT_TO_DELETE_STUDENT = 80;
 
     
     mapping (bytes32 => Role) internal roles;
@@ -194,6 +197,48 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths {
         }
     }
 
+    function createStudent(uint _id, string memory _firstname, string memory _lastname, uint _birthdate) external {
+        require(hasRole(CERTIFIER, msg.sender), "Caller is not a certifier");
+        require(_id > 0, "Id must be greater than 0");
+        require(bytes(_firstname).length > 0, "Firstname cannot be empty");
+        require(bytes(_lastname).length > 0, "Lastname cannot be empty");
+        require(_birthdate > 0, "Birthdate must be greater than 0");
+        require(students[_id].id == 0, "This student already exists");
+
+        addStudent(_id, _firstname, _lastname, _birthdate);
+    }
+
+    function removeStudentById(uint _id, bool _approve) external {
+        require(hasRole(CERTIFIER, msg.sender), "Caller is not a certifier");
+        require(_id > 0, "Id must be greater than 0");
+        require(students[_id].id != 0, "This student doesn't exist");
+
+        bytes32 multiSigName = keccak256(abi.encodePacked(_id, "DELETE STUDENT"));
+        multiSigIdentifier(multiSigName, CERTIFIER, string.concat("Delete student ", string(abi.encodePacked(_id))));
+
+        if (_approve && multiSig[multiSigName].approved[msg.sender] == false) {
+            multiSigRoleSign(multiSig[multiSigName], msg.sender);
+            emit multiSigSigned(multiSigName);
+        } else if (_approve == false) {
+            multiSigRoleUnsign(multiSig[multiSigName], msg.sender);
+            emit multiSigSigned(multiSigName);
+        }
+
+        if (multiSig[multiSigName].count >= (ceilUDiv(roles[CERTIFIER].nb * PERCENT_TO_DELETE_STUDENT, 100))) {
+            clearMultiSigRole(multiSig[multiSigName]);
+            emit multiSigCleared(multiSigName);
+            deleteStudent(_id);
+        }
+    }
+
+    function editStudentById(uint _id, string memory _firstname, string memory _lastname , uint256 _birthdate) external {
+        require(hasRole(CERTIFIER, msg.sender), "Caller is not a certifier");
+        require(_id > 0, "Id must be greater than 0");
+        require(students[_id].id != 0, "This student doesn't exist");
+
+        editStudent(_id, _firstname, _lastname, _birthdate);
+    }
+
     function createCertificate(uint studentId, appreciation app, degree deg, program prog) internal {
         certificates[keccak256(abi.encodePacked(studentId, app, deg, prog))] = Certificate(
             app,
@@ -208,6 +253,7 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths {
 
     function certify(uint studentId, appreciation app, degree deg, program prog, bool approve) external {
         require(hasRole(CERTIFIER, msg.sender), "Caller is not a certifier");
+        require(students[studentId].id != 0, "This student doesn't exist");
         require(app >= appreciation.A && app <= appreciation.D, "Appreciation is not valid");
         require(deg >= degree.BACHELOR && deg <= degree.PHD, "Degree is not valid");
         require(prog >= program.COMPUTER_SCIENCE && prog <= program.OTHER, "Program is not valid");
@@ -233,6 +279,7 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths {
 
     function deleteCertificate(uint studentId, appreciation app, degree deg, program prog, bool approve) external {
         require(hasRole(CERTIFIER, msg.sender), "Caller is not a certifier");
+        require(students[studentId].id != 0, "This student doesn't exist");
         require(app >= appreciation.A && app <= appreciation.D, "Appreciation is not valid");
         require(deg >= degree.BACHELOR && deg <= degree.PHD, "Degree is not valid");
         require(prog >= program.COMPUTER_SCIENCE && prog <= program.OTHER, "Program is not valid");
