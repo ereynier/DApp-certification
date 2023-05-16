@@ -5,15 +5,20 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Certifications from "@artifacts/contracts/Certifications.sol/Certifications.json";
 import { useAccount, useContractRead } from 'wagmi';
 import MultiSigList from './MultiSigList';
-import CreateMultiSig from './CreateMultiSig';
+import MultiSigRole from './MultiSigRole';
+import { ToastError } from './utils/ToastError';
+import { ToastPending } from './utils/ToastPending';
+import { ToastSuccess } from './utils/ToastSuccess';
 
-const contractAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3'
+const contractAddress = '0x610178dA211FEF7D417bC0e6FeD39F05609AD788'
 const inactiveTabCss = "hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300"
 const activeTabCss = "text-blue-600 bg-gray-100 rounded-t-lg active dark:bg-gray-800 dark:text-blue-500"
 
-export default function AdminConnect() {
+export default function AdminMain() {
 
-
+    const [error, setError] = useState("");
+    const [info, setInfo] = useState("");
+    const [success, setSuccess] = useState("");
     const [activeTab, setActiveTab] = useState(0);
 
 
@@ -61,19 +66,23 @@ export default function AdminConnect() {
         setActiveTab(tab);
     }
 
-
     return (
         <div className="flex flex-col items-center justify-center h-screen">
+            <div className="flex justify-center flex-col">
+                <ToastError error={error} onClick={() => setError("")} />
+                <ToastPending info={info} onClick={() => setInfo("")} />
+                <ToastSuccess msg={success} onClick={() => setSuccess("")} />
+            </div>
             <div className="absolute top-10 sm:top-0 left-0 mt-5">
                 <ul className="flex flex-wrap text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400 w-screen">
                     {isCertifier &&
                         <li className="mr-2 ml-5">
-                            <a href='#certifier' onClick={() => handleTabChange(0)} aria-current="page" className={`inline-block p-4 rounded-t-lg ${ activeTab == 0 ? activeTabCss : inactiveTabCss }`}>Certifier</a>
+                            <a onClick={() => handleTabChange(0)} aria-current="page" className={`inline-block p-4 rounded-t-lg ${activeTab == 0 ? activeTabCss : inactiveTabCss}`}>Certifier</a>
                         </li>
                     }
                     {isCertifierAdmin &&
                         <li className={`mr-2 ${isCertifier ? "" : "ml-5"}`}>
-                            <a href="#admin" onClick={() => handleTabChange(1)} className={`inline-block p-4 rounded-t-lg ${ activeTab == 1 ? activeTabCss : inactiveTabCss }`}>Admin</a>
+                            <a onClick={() => handleTabChange(1)} className={`inline-block p-4 rounded-t-lg ${activeTab == 1 ? activeTabCss : inactiveTabCss}`}>Admin</a>
                         </li>
                     }
                     {!isCertifier && !isCertifierAdmin &&
@@ -103,17 +112,22 @@ export default function AdminConnect() {
                         If you are not an admin use your links to see your certifications
                     </p>
                 )}
-                {isConnected && isCertifier && activeTab == 0 &&  (
-                    <CreateMultiSig role={String(CERTIFIER)}/>
-                )}
-                {isConnected && isCertifierAdmin && activeTab == 1 && (
-                    <CreateMultiSig role={String(CERTIFIER_ADMIN)}/>
-                )}
+            </div>
+            <div className=''>
                 {isConnected && isCertifier && activeTab == 0 && (
-                    <MultiSigList role={String(CERTIFIER)}/>
+                    //<MultiSigCertif userRole={String(CERTIFIER_ADMIN)} />
+                    <p>Salut</p>
+                    )}
+                {isConnected && isCertifierAdmin && activeTab == 1 && (
+                    <MultiSigRole userRole={String(CERTIFIER)} setError={setError} setInfo={setInfo} setSuccess={setSuccess} />
+                )}
+            </div>
+            <div>
+                {isConnected && isCertifier && activeTab == 0 && (
+                    <MultiSigList userRole={String(CERTIFIER)} address={address} />
                 )}
                 {isConnected && isCertifierAdmin && activeTab == 1 && (
-                    <MultiSigList role={String(CERTIFIER_ADMIN)}/>
+                    <MultiSigList userRole={String(CERTIFIER_ADMIN)} address={address} />
                 )}
             </div>
         </div>

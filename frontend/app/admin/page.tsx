@@ -12,7 +12,7 @@ import { hardhat, sepolia } from 'wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
 import { infuraProvider } from 'wagmi/providers/infura';
 
-import AdminConnect from './components/AdminConnect';
+import AdminConnect from './components/AdminMain';
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
     [hardhat, sepolia],

@@ -5,8 +5,9 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./utils/Maths.sol";
 import "./utils/MultiSigWithRole.sol";
 import "./Students.sol";
+import "./utils/AddressToString.sol";
 
-contract Certifications is AccessControl, MultiSigWithRole, Maths, Students {
+contract Certifications is AccessControl, MultiSigWithRole, Maths, Students, AddressToString {
 
     event multiSigSigned(bytes32 multiSigName);
     event multiSigCleared(bytes32 multiSigName);
@@ -93,7 +94,7 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths, Students {
 
     mapping (uint => bytes32) public multiSigId;
 
-    uint public multiSigIdCount;
+    uint multiSigIdCount;
 
     mapping (bytes32 => Certificate) public certificates;
 
@@ -146,7 +147,7 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths, Students {
         require(hasRole(roleHash, target) == false, string.concat("This address is already a ", string(abi.encodePacked(role.name))));
 
         bytes32 multiSigName = keccak256(abi.encodePacked(target, "GRANT", roleHash));
-        multiSigIdentifier(multiSigName, role.ADMIN, string.concat("Grant ", string(abi.encodePacked(role.name)), " ", string(abi.encodePacked(target))));
+        multiSigIdentifier(multiSigName, role.ADMIN, string.concat("Grant ", string(abi.encodePacked(role.name)), " ", addToStr(target)));
 
         if (approve && multiSig[multiSigName].approved[msg.sender] == false) {
             multiSigRoleSign(multiSig[multiSigName], msg.sender);
@@ -171,7 +172,7 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths, Students {
         require(hasRole(role.ADMIN, msg.sender), string.concat("Caller is not a ", string(abi.encodePacked(role.name)), " admin"));
 
         bytes32 multiSigName = keccak256(abi.encodePacked(target, "REVOKE", roleHash));
-        multiSigIdentifier(multiSigName, role.ADMIN, string.concat("Revoke ", string(abi.encodePacked(role.name)), " ", string(abi.encodePacked(target))));
+        multiSigIdentifier(multiSigName, role.ADMIN, string.concat("Revoke ", string(abi.encodePacked(role.name)), " ", addToStr(target)));
 
         if (approve && multiSig[multiSigName].approved[msg.sender] == false) {
             multiSigRoleSign(multiSig[multiSigName], msg.sender);
@@ -309,6 +310,20 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths, Students {
     function getCertificatesByStudent(uint _id) public view returns (bytes32[] memory) {
         require(students[_id].id != 0, "This student doesn't exist");
         return certificatesByStudent[_id];
+    }
+
+    function getAllMultiSig(address signer) public view returns (bytes32[] memory, uint8[] memory,  string[] memory, bool[] memory) {
+        string[] memory multiSigsInfo = new string[](multiSigIdCount);
+        uint8[] memory multiSigsCount = new uint8[](multiSigIdCount);
+        bytes32[] memory multiSigsRole = new bytes32[](multiSigIdCount);
+        bool[] memory multiSigsSigned = new bool[](multiSigIdCount);
+        for (uint i = 0; i < multiSigIdCount; i++) {
+            multiSigsInfo[i] = multiSig[multiSigId[i]].info;
+            multiSigsCount[i] = multiSig[multiSigId[i]].count;
+            multiSigsRole[i] = multiSig[multiSigId[i]].role;
+            multiSigsSigned[i] = multiSig[multiSigId[i]].approved[signer];
+        }
+        return (multiSigsRole, multiSigsCount, multiSigsInfo, multiSigsSigned);
     }
 
     function renounceRole(bytes32, address) public virtual override {

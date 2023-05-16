@@ -1,28 +1,49 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 import Certifications from "@artifacts/contracts/Certifications.sol/Certifications.json";
 import { useAccount, useContractRead } from 'wagmi';
+import SingleMultiSig from './SingleMultiSig';
 
 
-const contractAddress= "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+const contractAddress= "0x610178dA211FEF7D417bC0e6FeD39F05609AD788"
 
 interface Props {
-    role: string
+    userRole: string
+    address: string | undefined
 }
 
-const MultiSigList: React.FC<Props> = ({role}) => {
+const MultiSigList: React.FC<Props> = ({userRole, address}) => {
     
-    const multiSigIdCount = useContractRead({
+
+    const multiSig: any[] = useContractRead({
         address: contractAddress,
         abi: Certifications.abi,
-        functionName: 'multiSigIdCount',
-    }).data
+        functionName: 'getAllMultiSig',
+        args: [address || "0x0000000000000000000000000000000000000000"],
+        watch: true,
+    }).data as any[]
 
-    console.log(multiSigIdCount)
+    const multiSigCounter = (multiSig: any) => {
+        let multiSigSize: number[] = []
+        if (multiSig != undefined) {
+            for (let i = 0 ; i < multiSig[0].length; i++) {
+                multiSigSize.push(i)
+            }
+        }
+        return multiSigSize
+    }
 
-  return (
-    <div>MultiSigList {role}</div>
-  )
+    return (
+        <div>
+            <ul className="grid grid-cols-6 m-5 gap-3">
+                {multiSigCounter(multiSig).map((index) => {
+                    return (
+                        <SingleMultiSig key={index} userRole={userRole} multiSigRole={multiSig[0][index]} count={multiSig[1][index]} signed={multiSig[3][index]} info={multiSig[2][index]} />
+                    )
+                })}
+            </ul>
+        </div>
+    )
 }
 
 export default MultiSigList
