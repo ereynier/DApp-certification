@@ -5,6 +5,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Certifications from "@artifacts/contracts/Certifications.sol/Certifications.json";
 import { useAccount, useContractRead } from 'wagmi';
 import MultiSigList from './MultiSigList';
+import CreateMultiSig from './CreateMultiSig';
 
 const contractAddress = '0x5FbDB2315678afecb367f032d93F642f64180aa3'
 const inactiveTabCss = "hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300"
@@ -101,6 +102,12 @@ export default function AdminConnect() {
                         <br />
                         If you are not an admin use your links to see your certifications
                     </p>
+                )}
+                {isConnected && isCertifier && activeTab == 0 &&  (
+                    <CreateMultiSig role={String(CERTIFIER)}/>
+                )}
+                {isConnected && isCertifierAdmin && activeTab == 1 && (
+                    <CreateMultiSig role={String(CERTIFIER_ADMIN)}/>
                 )}
                 {isConnected && isCertifier && activeTab == 0 && (
                     <MultiSigList role={String(CERTIFIER)}/>

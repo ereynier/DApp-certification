@@ -3,9 +3,8 @@ import React from 'react'
 import Certifications from "@artifacts/contracts/Certifications.sol/Certifications.json";
 import { useAccount, useContractRead } from 'wagmi';
 
-import "dotenv/config";
 
-const contractAddress: string = String(process.env.CONTRACT_ADDRESS) || ""
+const contractAddress= "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
 
 interface Props {
     role: string
@@ -13,13 +12,13 @@ interface Props {
 
 const MultiSigList: React.FC<Props> = ({role}) => {
     
-    const multiSigId = useContractRead({
+    const multiSigIdCount = useContractRead({
         address: contractAddress,
         abi: Certifications.abi,
-        functionName: 'multiSigId',
+        functionName: 'multiSigIdCount',
     }).data
 
-    console.log(multiSigId)
+    console.log(multiSigIdCount)
 
   return (
     <div>MultiSigList {role}</div>
