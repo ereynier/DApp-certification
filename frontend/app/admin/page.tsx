@@ -12,7 +12,7 @@ import { hardhat, sepolia } from 'wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
 import { infuraProvider } from 'wagmi/providers/infura';
 
-import Test from './components/Test';
+import AdminConnect from './components/AdminConnect';
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
     [hardhat, sepolia],
@@ -38,7 +38,7 @@ export default function Admin() {
     return (
         <WagmiConfig config={wagmiConfig}>
             <RainbowKitProvider chains={chains}>
-                <Test />
+                <AdminConnect />
             </RainbowKitProvider>
         </WagmiConfig>
     )

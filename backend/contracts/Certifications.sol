@@ -93,7 +93,7 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths, Students {
 
     mapping (uint => bytes32) public multiSigId;
 
-    uint multiSigIdCount;
+    uint public multiSigIdCount;
 
     mapping (bytes32 => Certificate) public certificates;
 
