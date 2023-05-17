@@ -94,12 +94,12 @@ export default function AdminMain() {
                 <ul className="flex flex-wrap text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400 w-screen">
                     {isCertifier &&
                         <li className="mr-2 ml-5">
-                            <a onClick={() => handleTabChange(0)} aria-current="page" className={`inline-block p-4 rounded-t-lg ${activeTab == 0 ? activeTabCss : inactiveTabCss}`}>Certifier ({CERTIFIER_NB})</a>
+                            <a onClick={() => handleTabChange(0)} aria-current="page" className={`cursor-default inline-block p-4 rounded-t-lg ${activeTab == 0 ? activeTabCss : inactiveTabCss}`}>Certifier ({CERTIFIER_NB})</a>
                         </li>
                     }
                     {isCertifierAdmin &&
                         <li className={`mr-2 ${isCertifier ? "" : "ml-5"}`}>
-                            <a onClick={() => handleTabChange(1)} className={`inline-block p-4 rounded-t-lg ${activeTab == 1 ? activeTabCss : inactiveTabCss}`}>Admin ({CERTIFIER_ADMIN_NB})</a>
+                            <a onClick={() => handleTabChange(1)} className={`cursor-default inline-block p-4 rounded-t-lg ${activeTab == 1 ? activeTabCss : inactiveTabCss}`}>Admin ({CERTIFIER_ADMIN_NB})</a>
                         </li>
                     }
                     {!isCertifier && !isCertifierAdmin &&
