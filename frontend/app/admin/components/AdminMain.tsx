@@ -10,7 +10,7 @@ import { ToastError } from './utils/ToastError';
 import { ToastPending } from './utils/ToastPending';
 import { ToastSuccess } from './utils/ToastSuccess';
 
-const contractAddress = '0x610178dA211FEF7D417bC0e6FeD39F05609AD788'
+const contractAddress: `0x${string}` = process.env.CONTRACT_ADDRESS as `0x${string}`
 const inactiveTabCss = "hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300"
 const activeTabCss = "text-blue-600 bg-gray-100 rounded-t-lg active dark:bg-gray-800 dark:text-blue-500"
 

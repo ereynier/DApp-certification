@@ -4,8 +4,7 @@ import Certifications from "@artifacts/contracts/Certifications.sol/Certificatio
 import { useAccount, useContractRead } from 'wagmi';
 import SingleMultiSig from './SingleMultiSig';
 
-
-const contractAddress= "0x610178dA211FEF7D417bC0e6FeD39F05609AD788"
+const contractAddress: `0x${string}` = process.env.CONTRACT_ADDRESS as `0x${string}`
 
 interface Props {
     userRole: string

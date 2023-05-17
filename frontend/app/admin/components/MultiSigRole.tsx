@@ -4,7 +4,7 @@ import Certifications from "@artifacts/contracts/Certifications.sol/Certificatio
 import { useContractRead } from 'wagmi';
 import { useContractWrite, useWaitForTransaction } from 'wagmi'
 
-const contractAddress = "0x610178dA211FEF7D417bC0e6FeD39F05609AD788"
+const contractAddress: `0x${string}` = process.env.CONTRACT_ADDRESS as `0x${string}`
 
 interface Props {
     userRole: string
@@ -30,19 +30,24 @@ const MultiSigRole: React.FC<Props> = ({ userRole, setError, setInfo, setSuccess
         functionName: 'CERTIFIER_ADMIN',
     }).data
 
-    const { data, write } = useContractWrite({
+    const grantAnyRole = useContractWrite({
         address: contractAddress,
         abi: Certifications.abi,
         functionName: 'grantAnyRole',
         onError: (error: any) => {
             setSuccess("")
             setInfo("")
-            setError(error.details)
+            console.log({error})
+            if (error.details) {
+                setError(error.details)
+            } else {
+                setError(error.message)
+            }
         }
     })
-    const {isLoading} = useWaitForTransaction({
-        hash: data?.hash,
-        enabled: !!data?.hash,
+    const waitGrant = useWaitForTransaction({
+        hash: grantAnyRole.data?.hash,
+        enabled: !!grantAnyRole.data?.hash,
         onSuccess(data) {
             console.log('Transaction successful:', data)
             setInfo("")
@@ -57,11 +62,58 @@ const MultiSigRole: React.FC<Props> = ({ userRole, setError, setInfo, setSuccess
             console.log('Transaction error:', error)
             setInfo("")
             setSuccess("")
-            setError(error.details)
+            console.log({error})
+            if (error.details) {
+                setError(error.details)
+            } else {
+                setError(error.message)
+            }
         }
     })
 
-    if (isLoading) {
+    const revokeAnyRole = useContractWrite({
+        address: contractAddress,
+        abi: Certifications.abi,
+        functionName: 'revokeAnyRole',
+        onError: (error: any) => {
+            setSuccess("")
+            setInfo("")
+            console.log({error})
+            if (error.details) {
+                setError(error.details)
+            } else {
+                setError(error.message)
+            }
+        }
+    })
+
+    const waitRevoke = useWaitForTransaction({
+        hash: revokeAnyRole.data?.hash,
+        enabled: !!revokeAnyRole.data?.hash,
+        onSuccess(data) {
+            console.log('Transaction successful:', data)
+            setInfo("")
+            setError("")
+            setTarget("")
+            setSuccess("Transaction successful")
+            setTimeout(() => {
+                setSuccess("")
+            }, 5000)
+        },
+        onError(error: any) {
+            console.log('Transaction error:', error)
+            setInfo("")
+            setSuccess("")
+            console.log({error})
+            if (error.details) {
+                setError(error.details)
+            } else {
+                setError(error.message)
+            }
+        },
+    })
+
+    if (waitGrant.isLoading || waitRevoke.isLoading) {
         setSuccess("")
         setError("")
         setInfo("Transaction sent...")
@@ -85,9 +137,15 @@ const MultiSigRole: React.FC<Props> = ({ userRole, setError, setInfo, setSuccess
         console.log('Role:', role);
         console.log('Target:', target);
 
-        write({
-            args: [role, target, true],
-        })
+        if (action === "Grant") {
+            grantAnyRole.write({
+                args: [role, target, true],
+            })
+        } else if (action === "Revoke") {
+            revokeAnyRole.write({
+                args: [role, target, true],
+            })
+        }
     };
 
     return (
