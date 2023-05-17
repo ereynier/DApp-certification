@@ -34,11 +34,11 @@ interface WaitTransacProps {
     setSuccess: (success: string) => void
     setInfo: (info: string) => void
     setError: (error: string) => void
-    setTarget: (target: string) => void
+    onSuccess: () => void
     transaction: any
 }
 
-export function WaitTransac({setSuccess, setInfo, setError, setTarget, transaction}: WaitTransacProps): any {
+export function WaitTransac({setSuccess, setInfo, setError, onSuccess, transaction}: WaitTransacProps): any {
     const waitTransac = useWaitForTransaction({
         hash: transaction.data?.hash,
         enabled: !!transaction.data?.hash,
@@ -46,7 +46,7 @@ export function WaitTransac({setSuccess, setInfo, setError, setTarget, transacti
             console.log('Transaction successful:', data)
             setInfo("")
             setError("")
-            setTarget("")
+            onSuccess()
             setSuccess("Transaction successful")
             setTimeout(() => {
                 setSuccess("")

@@ -1,7 +1,7 @@
-import React, { use, useState } from 'react'
+import React from 'react'
 
 import Certifications from "@artifacts/contracts/Certifications.sol/Certifications.json";
-import { useAccount, useContractRead } from 'wagmi';
+import { useContractRead } from 'wagmi';
 import SingleMultiSig from './SingleMultiSig';
 import { ContractWrite, WaitTransac } from './utils/ContractWrite';
 
@@ -27,6 +27,8 @@ const MultiSigList: React.FC<Props> = ({userRole, address, setSuccess, setInfo, 
         watch: true,
     }).data as any[]
 
+    console.log({multiSig})
+
     const CERTIFIER = useContractRead({
         address: contractAddress,
         abi: Certifications.abi,
@@ -43,9 +45,9 @@ const MultiSigList: React.FC<Props> = ({userRole, address, setSuccess, setInfo, 
 
     //CONTRACT WRITE
     const grantAnyRole = ContractWrite({setSuccess, setInfo, setError, functionName: 'grantAnyRole'})
-    const waitGrant = WaitTransac({setSuccess, setInfo, setError, setTarget: (target: string) => {}, transaction: grantAnyRole})
+    const waitGrant = WaitTransac({setSuccess, setInfo, setError, onSuccess: () => {}, transaction: grantAnyRole})
     const revokeAnyRole = ContractWrite({setSuccess, setInfo, setError, functionName: 'revokeAnyRole'})
-    const waitRevoke = WaitTransac({setSuccess, setInfo, setError, setTarget: (target: string) => {}, transaction: revokeAnyRole})
+    const waitRevoke = WaitTransac({setSuccess, setInfo, setError, onSuccess: () => {}, transaction: revokeAnyRole})
 
     function signRole(signed: boolean, info: string) {
         let role = ""

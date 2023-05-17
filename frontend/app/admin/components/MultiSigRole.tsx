@@ -77,7 +77,7 @@ const MultiSigRole: React.FC<Props> = ({ userRole, setError, setInfo, setSuccess
     //         }
     //     }
     // })
-    const waitGrant = WaitTransac({setSuccess, setInfo, setError, setTarget, transaction: grantAnyRole})
+    const waitGrant = WaitTransac({setSuccess, setInfo, setError, onSuccess: () => {setTarget("")}, transaction: grantAnyRole})
 
     // const revokeAnyRole = useContractWrite({
     //     address: contractAddress,
@@ -122,7 +122,7 @@ const MultiSigRole: React.FC<Props> = ({ userRole, setError, setInfo, setSuccess
     //     },
     // })
 
-    const waitRevoke = WaitTransac({setSuccess, setInfo, setError, setTarget, transaction: revokeAnyRole})
+    const waitRevoke = WaitTransac({setSuccess, setInfo, setError, onSuccess: () => {setTarget("")}, transaction: revokeAnyRole})
 
 
     

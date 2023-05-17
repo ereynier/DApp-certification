@@ -6,9 +6,11 @@ import Certifications from "@artifacts/contracts/Certifications.sol/Certificatio
 import { useAccount, useContractRead } from 'wagmi';
 import MultiSigList from './MultiSigList';
 import MultiSigRole from './MultiSigRole';
+import MultiSigStudent from './MultiSigStudent';
 import { ToastError } from './utils/ToastError';
 import { ToastPending } from './utils/ToastPending';
 import { ToastSuccess } from './utils/ToastSuccess';
+import MultiSigCertif from './MultiSigCertif';
 
 const contractAddress: `0x${string}` = process.env.CONTRACT_ADDRESS as `0x${string}`
 const inactiveTabCss = "hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300"
@@ -130,8 +132,10 @@ export default function AdminMain() {
             </div>
             <div className=''>
                 {isConnected && isCertifier && activeTab == 0 && (
-                    //<MultiSigCertif userRole={String(CERTIFIER_ADMIN)} />
-                    <p>Salut</p>
+                    <div>
+                        <MultiSigStudent userRole={String(CERTIFIER)} setError={setError} setInfo={setInfo} setSuccess={setSuccess} />
+                        <MultiSigCertif userRole={String(CERTIFIER_ADMIN)} setError={setError} setInfo={setInfo} setSuccess={setSuccess} />
+                    </div>
                     )}
                 {isConnected && isCertifierAdmin && activeTab == 1 && (
                     <MultiSigRole userRole={String(CERTIFIER)} setError={setError} setInfo={setInfo} setSuccess={setSuccess} />

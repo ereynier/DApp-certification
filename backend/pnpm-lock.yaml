@@ -7,6 +7,9 @@ dependencies:
   AccessControl.sol:
     specifier: link:@openzeppelin/contracts/access/AccessControl.sol
     version: link:@openzeppelin/contracts/access/AccessControl.sol
+  Strings.sol:
+    specifier: link:@openzeppelin/contracts/utils/Strings.sol
+    version: link:@openzeppelin/contracts/utils/Strings.sol
   dotenv:
     specifier: ^16.0.3
     version: 16.0.3
