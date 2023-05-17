@@ -34,6 +34,21 @@ export default function AdminMain() {
         functionName: 'CERTIFIER_ADMIN',
     }).data
 
+    const CERTIFIER_NB: number = Number(useContractRead({
+        address: contractAddress,
+        abi: Certifications.abi,
+        functionName: 'getRoleMembersNb',
+        args: [CERTIFIER],
+        watch: true,
+    }).data)
+
+    const CERTIFIER_ADMIN_NB: number = Number(useContractRead({
+        address: contractAddress,
+        abi: Certifications.abi,
+        functionName: 'getRoleMembersNb',
+        args: [CERTIFIER_ADMIN],
+        watch: true,
+    }).data)
 
     const { address, isConnected } = useAccount()
 
@@ -77,12 +92,12 @@ export default function AdminMain() {
                 <ul className="flex flex-wrap text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400 w-screen">
                     {isCertifier &&
                         <li className="mr-2 ml-5">
-                            <a onClick={() => handleTabChange(0)} aria-current="page" className={`inline-block p-4 rounded-t-lg ${activeTab == 0 ? activeTabCss : inactiveTabCss}`}>Certifier</a>
+                            <a onClick={() => handleTabChange(0)} aria-current="page" className={`inline-block p-4 rounded-t-lg ${activeTab == 0 ? activeTabCss : inactiveTabCss}`}>Certifier ({CERTIFIER_NB})</a>
                         </li>
                     }
                     {isCertifierAdmin &&
                         <li className={`mr-2 ${isCertifier ? "" : "ml-5"}`}>
-                            <a onClick={() => handleTabChange(1)} className={`inline-block p-4 rounded-t-lg ${activeTab == 1 ? activeTabCss : inactiveTabCss}`}>Admin</a>
+                            <a onClick={() => handleTabChange(1)} className={`inline-block p-4 rounded-t-lg ${activeTab == 1 ? activeTabCss : inactiveTabCss}`}>Admin ({CERTIFIER_ADMIN_NB})</a>
                         </li>
                     }
                     {!isCertifier && !isCertifierAdmin &&
@@ -124,10 +139,10 @@ export default function AdminMain() {
             </div>
             <div>
                 {isConnected && isCertifier && activeTab == 0 && (
-                    <MultiSigList userRole={String(CERTIFIER)} address={address} />
+                    <MultiSigList userRole={String(CERTIFIER)} address={address} setSuccess={setSuccess} setInfo={setInfo} setError={setError} />
                 )}
                 {isConnected && isCertifierAdmin && activeTab == 1 && (
-                    <MultiSigList userRole={String(CERTIFIER_ADMIN)} address={address} />
+                    <MultiSigList userRole={String(CERTIFIER_ADMIN)} address={address} setSuccess={setSuccess} setInfo={setInfo} setError={setError} />
                 )}
             </div>
         </div>

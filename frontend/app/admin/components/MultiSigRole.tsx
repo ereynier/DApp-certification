@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 
 import Certifications from "@artifacts/contracts/Certifications.sol/Certifications.json";
 import { useContractRead } from 'wagmi';
 import { useContractWrite, useWaitForTransaction } from 'wagmi'
+import { ContractWrite, WaitTransac } from './utils/ContractWrite';
 
 const contractAddress: `0x${string}` = process.env.CONTRACT_ADDRESS as `0x${string}`
 
@@ -18,6 +19,7 @@ const MultiSigRole: React.FC<Props> = ({ userRole, setError, setInfo, setSuccess
     const [target, setTarget] = useState('');
     const [action, setAction] = useState('');
 
+    //CONTRACT READ
     const CERTIFIER = useContractRead({
         address: contractAddress,
         abi: Certifications.abi,
@@ -30,95 +32,102 @@ const MultiSigRole: React.FC<Props> = ({ userRole, setError, setInfo, setSuccess
         functionName: 'CERTIFIER_ADMIN',
     }).data
 
-    const grantAnyRole = useContractWrite({
-        address: contractAddress,
-        abi: Certifications.abi,
-        functionName: 'grantAnyRole',
-        onError: (error: any) => {
-            setSuccess("")
-            setInfo("")
-            console.log({error})
-            if (error.details) {
-                setError(error.details)
-            } else {
-                setError(error.message)
-            }
-        }
-    })
-    const waitGrant = useWaitForTransaction({
-        hash: grantAnyRole.data?.hash,
-        enabled: !!grantAnyRole.data?.hash,
-        onSuccess(data) {
-            console.log('Transaction successful:', data)
-            setInfo("")
-            setError("")
-            setTarget("")
-            setSuccess("Transaction successful")
-            setTimeout(() => {
-                setSuccess("")
-            }, 5000)
-        },
-        onError(error: any) {
-            console.log('Transaction error:', error)
-            setInfo("")
-            setSuccess("")
-            console.log({error})
-            if (error.details) {
-                setError(error.details)
-            } else {
-                setError(error.message)
-            }
-        }
-    })
+    //CONTRACT WRITE
 
-    const revokeAnyRole = useContractWrite({
-        address: contractAddress,
-        abi: Certifications.abi,
-        functionName: 'revokeAnyRole',
-        onError: (error: any) => {
-            setSuccess("")
-            setInfo("")
-            console.log({error})
-            if (error.details) {
-                setError(error.details)
-            } else {
-                setError(error.message)
-            }
-        }
-    })
+    // const grantAnyRole = useContractWrite({
+    //     address: contractAddress,
+    //     abi: Certifications.abi,
+    //     functionName: 'grantAnyRole',
+    //     onError: (error: any) => {
+    //         setSuccess("")
+    //         setInfo("")
+    //         console.log({error})
+    //         if (error.details) {
+    //             setError(error.details)
+    //         } else {
+    //             setError(error.message)
+    //         }
+    //     }
+    // })
 
-    const waitRevoke = useWaitForTransaction({
-        hash: revokeAnyRole.data?.hash,
-        enabled: !!revokeAnyRole.data?.hash,
-        onSuccess(data) {
-            console.log('Transaction successful:', data)
-            setInfo("")
-            setError("")
-            setTarget("")
-            setSuccess("Transaction successful")
-            setTimeout(() => {
-                setSuccess("")
-            }, 5000)
-        },
-        onError(error: any) {
-            console.log('Transaction error:', error)
-            setInfo("")
-            setSuccess("")
-            console.log({error})
-            if (error.details) {
-                setError(error.details)
-            } else {
-                setError(error.message)
-            }
-        },
-    })
+    const grantAnyRole = ContractWrite({setSuccess, setInfo, setError, functionName: 'grantAnyRole'})
 
-    if (waitGrant.isLoading || waitRevoke.isLoading) {
-        setSuccess("")
-        setError("")
-        setInfo("Transaction sent...")
-    }
+    // const waitGrant = useWaitForTransaction({
+    //     hash: grantAnyRole.data?.hash,
+    //     enabled: !!grantAnyRole.data?.hash,
+    //     onSuccess(data) {
+    //         console.log('Transaction successful:', data)
+    //         setInfo("")
+    //         setError("")
+    //         setTarget("")
+    //         setSuccess("Transaction successful")
+    //         setTimeout(() => {
+    //             setSuccess("")
+    //         }, 5000)
+    //     },
+    //     onError(error: any) {
+    //         console.log('Transaction error:', error)
+    //         setInfo("")
+    //         setSuccess("")
+    //         console.log({error})
+    //         if (error.details) {
+    //             setError(error.details)
+    //         } else {
+    //             setError(error.message)
+    //         }
+    //     }
+    // })
+    const waitGrant = WaitTransac({setSuccess, setInfo, setError, setTarget, transaction: grantAnyRole})
 
+    // const revokeAnyRole = useContractWrite({
+    //     address: contractAddress,
+    //     abi: Certifications.abi,
+    //     functionName: 'revokeAnyRole',
+    //     onError: (error: any) => {
+    //         setSuccess("")
+    //         setInfo("")
+    //         console.log({error})
+    //         if (error.details) {
+    //             setError(error.details)
+    //         } else {
+    //             setError(error.message)
+    //         }
+    //     }
+    // })
+    const revokeAnyRole = ContractWrite({setSuccess, setInfo, setError, functionName: 'revokeAnyRole'})
+
+    // const waitRevoke = useWaitForTransaction({
+    //     hash: revokeAnyRole.data?.hash,
+    //     enabled: !!revokeAnyRole.data?.hash,
+    //     onSuccess(data) {
+    //         console.log('Transaction successful:', data)
+    //         setInfo("")
+    //         setError("")
+    //         setTarget("")
+    //         setSuccess("Transaction successful")
+    //         setTimeout(() => {
+    //             setSuccess("")
+    //         }, 5000)
+    //     },
+    //     onError(error: any) {
+    //         console.log('Transaction error:', error)
+    //         setInfo("")
+    //         setSuccess("")
+    //         console.log({error})
+    //         if (error.details) {
+    //             setError(error.details)
+    //         } else {
+    //             setError(error.message)
+    //         }
+    //     },
+    // })
+
+    const waitRevoke = WaitTransac({setSuccess, setInfo, setError, setTarget, transaction: revokeAnyRole})
+
+
+    
+
+    //HANDLE CHANGE
     const handleRoleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setRole(event.target.value);
     };
@@ -146,6 +155,9 @@ const MultiSigRole: React.FC<Props> = ({ userRole, setError, setInfo, setSuccess
                 args: [role, target, true],
             })
         }
+        setSuccess("")
+        setError("")
+        setInfo("Wait for transaction...")
     };
 
     return (

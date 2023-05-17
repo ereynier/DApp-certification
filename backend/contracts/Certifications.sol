@@ -326,6 +326,10 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths, Students, Add
         return (multiSigsRole, multiSigsCount, multiSigsInfo, multiSigsSigned);
     }
 
+    function getRoleMembersNb(bytes32 _role) public view returns (uint) {
+        return roles[_role].nb;
+    }
+
     function renounceRole(bytes32, address) public virtual override {
         revert("You can't renounce to your role. Please contact admins");
     }
