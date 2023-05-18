@@ -8,6 +8,17 @@ interface Props {
     info: string;
     onClick: (signed:boolean, info: string) => void;
     onRefresh: (info: string) => void;
+    filters: {
+      filterSearch: string;
+      filterSigned: boolean;
+      filterUnsigned: boolean;
+      filterDeleteStud: boolean;
+      filterDeleteCertif: boolean;
+      filterCertify: boolean;
+      filterGrant: boolean;
+      filterRevoke: boolean;
+
+    }
 }
 
 const APPRECIATION = [
@@ -42,7 +53,7 @@ const PROGRAM = [
   "OTHER"
 ]
 
-const SingleMultiSig: React.FC<Props> = ({userRole, multiSigRole, count, signed, info, onClick, onRefresh}) => {
+const SingleMultiSig: React.FC<Props> = ({userRole, multiSigRole, count, signed, info, onClick, onRefresh, filters}) => {
 
   function formatInfo (info: string): string {
     if (info.includes("Certify")) {
@@ -72,8 +83,44 @@ const SingleMultiSig: React.FC<Props> = ({userRole, multiSigRole, count, signed,
     return info
   }
 
+  function filtering() {
+    if (userRole !== multiSigRole) {
+      return true
+    }
+    if (count === 0) {
+      return true
+    }
+    if (filters.filterSearch !== "") {
+      if (!formatInfo(info).toLocaleLowerCase().includes(filters.filterSearch.toLocaleLowerCase())) {
+        return true
+      }
+    }
+    if (!filters.filterSigned && signed) {
+      return true
+    }
+    if (!filters.filterUnsigned && !signed) {
+      return true
+    }
+    if (!filters.filterDeleteStud && info.includes("Delete student")) {
+      return true
+    }
+    if (!filters.filterDeleteCertif && info.includes("Delete") && !info.includes("student")) {
+      return true
+    }
+    if (!filters.filterCertify && info.includes("Certify")) {
+      return true
+    }
+    if (!filters.filterGrant && info.includes("Grant")) {
+      return true
+    }
+    if (!filters.filterRevoke && info.includes("Revoke")) {
+      return true
+    }
+    return false
+  }
+
   return (
-    <li className={`${userRole !== multiSigRole || count === 0 ? "hidden" : "" } flex flex-row items-center justify-between p-4 space-x-4 bg-gray-100 rounded-lg`}>
+    <li className={`${filtering() ? "hidden" : "" } flex flex-row items-center justify-between p-4 space-x-4 bg-gray-100 rounded-lg`}>
         <div className="flex flex-col items-start justify-start">
             <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{count} signature(s)</p>
             {signed && <p className="text-xs font-medium text-green-500 dark:text-green-400">Signed</p>}

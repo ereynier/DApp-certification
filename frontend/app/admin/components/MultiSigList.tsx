@@ -37,6 +37,17 @@ const MultiSigList: React.FC<Props> = ({ userRole, address, setSuccess, setInfo,
         setFilterSearch("")
     }
 
+    const filters = {
+        filterSearch: filterSearch,
+        filterSigned: filterSigned,
+        filterUnsigned: filterUnsigned,
+        filterDeleteStud: filterDeleteStud,
+        filterDeleteCertif: filterDeleteCertif,
+        filterCertify: filterCertify,
+        filterGrant: filterGrant,
+        filterRevoke: filterRevoke
+    }
+
     //CONTRACT READ
     const multiSig: any[] = useContractRead({
         address: contractAddress,
@@ -216,14 +227,14 @@ const MultiSigList: React.FC<Props> = ({ userRole, address, setSuccess, setInfo,
                     </div>
                 </div>
                 <div className="flex flex-row items-end gap-4">
-                    <input type="text" value={filterSearch} onChange={(e) => setFilterSearch(e.target.value)} className="h-10 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search" />
+                    <input type="text" value={filterSearch} onChange={handleFilterSearch} className="h-10 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search" />
                     <button onClick={resetFilters} className="h-10 w-content text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">Reset filters</button>
                 </div>
             </div>
             <ul className="grid grid-cols-6 m-5 gap-3">
                 {multiSigCounter(multiSig).map((index) => {
                     return (
-                        <SingleMultiSig key={index} userRole={userRole} multiSigRole={multiSig[0][index]} count={multiSig[1][index]} signed={multiSig[3][index]} info={multiSig[2][index]} onClick={handleClick} onRefresh={handleRefresh} />
+                        <SingleMultiSig key={index} userRole={userRole} multiSigRole={multiSig[0][index]} count={multiSig[1][index]} signed={multiSig[3][index]} info={multiSig[2][index]} onClick={handleClick} onRefresh={handleRefresh} filters={filters} />
                     )
                 })}
             </ul>
