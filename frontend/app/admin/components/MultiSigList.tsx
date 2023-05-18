@@ -194,7 +194,7 @@ const MultiSigList: React.FC<Props> = ({ userRole, address, setSuccess, setInfo,
     }
 
     return (
-        <div>
+        <div className='w-full'>
             <div className="flex flex-row justify-center items-center gap-10 mt-5">
                 <div className="flex items-end ml-4 gap-4">
                     <div>
@@ -231,7 +231,7 @@ const MultiSigList: React.FC<Props> = ({ userRole, address, setSuccess, setInfo,
                     <button onClick={resetFilters} className="h-10 w-content text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">Reset filters</button>
                 </div>
             </div>
-            <ul className="grid grid-cols-6 m-5 gap-3">
+            <ul className="grid grid-cols-1 place-items-center sm:place-items-stretch sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-col-6 m-10 gap-3 p-2 overflow-x-scroll">
                 {multiSigCounter(multiSig).map((index) => {
                     return (
                         <SingleMultiSig key={index} userRole={userRole} multiSigRole={multiSig[0][index]} count={multiSig[1][index]} signed={multiSig[3][index]} info={multiSig[2][index]} onClick={handleClick} onRefresh={handleRefresh} filters={filters} />

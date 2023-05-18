@@ -84,7 +84,7 @@ export default function AdminMain() {
     }
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen">
+        <div className="flex flex-col items-center mt-20 h-screen">
             <div className="flex justify-center flex-col">
                 <ToastError error={error} onClick={() => setError("")} />
                 <ToastPending info={info} onClick={() => setInfo("")} />
@@ -130,7 +130,7 @@ export default function AdminMain() {
                     </p>
                 )}
             </div>
-            <div className=''>
+            <div className='flex flex-col relative'>
                 {isConnected && isCertifier && activeTab == 0 && (
                     <div>
                         <MultiSigStudent userRole={String(CERTIFIER)} setError={setError} setInfo={setInfo} setSuccess={setSuccess} />

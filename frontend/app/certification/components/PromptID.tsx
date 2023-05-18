@@ -28,7 +28,6 @@ const PromptID = () => {
                 <input required onChange={handleCertifId} value={promptCertifId} className="appearence-non h-12 bg-gray-50 border border-gray-300 text-gray-900 text-mb rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" type='text' placeholder='Certification ID' />
                 <button type='submit' className='h-12 ext-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-mb px-5 py-2.5 text-center mr-2'>Submit</button>
             </form>
-
         </div>
     )
 }

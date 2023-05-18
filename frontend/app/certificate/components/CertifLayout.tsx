@@ -10,6 +10,38 @@ interface Props {
     certifId: string
 }
 
+const APPRECIATION = [
+    "A",
+    "B",
+    "C",
+    "D"
+  ]
+  
+  const DEGREE = [
+    "BACHELOR",
+    "MASTER",
+    "PHD"
+  ]
+  
+  const PROGRAM = [
+    "COMPUTER_SCIENCE",
+    "MATHEMATICS",
+    "PHYSICS",
+    "CHEMISTRY",
+    "BIOLOGY",
+    "ECONOMICS",
+    "LAW",
+    "MEDICINE",
+    "PHILOSOPHY",
+    "LITERATURE",
+    "HISTORY",
+    "GEOGRAPHY",
+    "ARTS",
+    "MUSIC",
+    "SPORTS",
+    "OTHER"
+  ]
+
 const CertifLayout = ({certifId}: Props) => {
 
     const [certifData, setCertifData] = useState([0, 0, 0, 0, 0])
@@ -36,28 +68,29 @@ const CertifLayout = ({certifId}: Props) => {
 
 
   return (
-    <div>
-        <h1>Certificate</h1>
+    <div className='flex flex-col items-center justify-center'>
+        <h1 className="text-5xl font-extrabold dark:text-white m-5 text-center">Your degree certificate on the blockchain</h1>
         {(!certif.data || !student.data) && (
-            <div>
-                <p>This certificate does not exist or has been deleted</p>
+            <div className='absolute inset-y-1/2'>
+                <p className='mb-2 text-lg font-normal text-gray-500 dark:text-white'>This certificate does not exist or has been deleted</p>
             </div>
         )}
         {certif.data && student.data && (
             <div>
+                <hr className="h-px my-8 bg-gray-200 border-0 dark:bg-gray-700" />
                 <div>
-                    <p>studentId: {certif.data[4].toString()}</p>
-                    <p>Firstame: {student.data[0]}</p>
-                    <p>Lastame: {student.data[1]}</p>
-                    <p>Birthdate: {(new Date(Number(student.data[2]))).toLocaleDateString('en-US')}</p>
-                    <br />
+                    <p className='mb-2 text-lg font-normal text-gray-500 dark:text-white'>Firstame: {student.data[0]}</p>
+                    <p className='mb-2 text-lg font-normal text-gray-500 dark:text-white'>Lastame: {student.data[1]}</p>
+                    <p className='mb-2 text-lg font-normal text-gray-500 dark:text-white'>Birthdate: {(new Date(Number(student.data[2]))).toLocaleDateString('en-US')}</p>
+                    <p className="my-2 text-lg text-gray-400 break-all">studentId: {certif.data[4].toString()}</p>
+                    <hr className="w-48 h-1 mx-auto my-4 bg-gray-100 border-0 rounded md:my-10 dark:bg-gray-700" />
                 </div>
-                <div>
-                    <p>certifId: {certifId}</p>
-                    <p>Appreciation: {certif.data[0].toString()}</p>
-                    <p>Degree: {certif.data[1].toString()}</p>
-                    <p>Program: {certif.data[2].toString()}</p>
-                    <p>Delivered: {(new Date(Number(certif.data[3]) * 1000)).toLocaleDateString('en-US')}</p>
+                <div className='w-full'>
+                    <p className='mb-2 text-lg font-normal text-gray-500 dark:text-white'>Degree: {DEGREE[certif.data[1]]}</p>
+                    <p className='mb-2 text-lg font-normal text-gray-500 dark:text-white'>Program: {PROGRAM[certif.data[2]]}</p>
+                    <p className='mb-2 text-lg font-normal text-gray-500 dark:text-white'>Appreciation: {APPRECIATION[certif.data[0]]}</p>
+                    <p className='mb-2 text-lg font-normal text-gray-500 dark:text-white'>Delivered: {(new Date(Number(certif.data[3]) * 1000)).toLocaleDateString('en-US')}</p>
+                    <p className="my-2 text-lg text-gray-400 break-all">certificate ID: {certifId}</p>
                 </div>
             </div>
         )}

@@ -120,14 +120,16 @@ const SingleMultiSig: React.FC<Props> = ({userRole, multiSigRole, count, signed,
   }
 
   return (
-    <li className={`${filtering() ? "hidden" : "" } flex flex-row items-center justify-between p-4 space-x-4 bg-gray-100 rounded-lg`}>
-        <div className="flex flex-col items-start justify-start">
+    <li className={`${filtering() ? "hidden" : "" } w-64 sm:w-auto sm:h-auto flex flex-row items-center justify-between p-4 space-x-4 bg-gray-100 rounded-lg hover:scale-105 transition`}>
+        <div className="flex flex-col items-start justify-start w-64 h-36">
             <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{count} signature(s)</p>
             {signed && <p className="text-xs font-medium text-green-500 dark:text-green-400">Signed</p>}
             {!signed && <p className="text-xs font-medium text-red-500 dark:text-red-400">Not signed</p>}
             <p className='text-black'><span title={info.includes("Grant") || info.includes("Revoke") ? info.split(" ")[2] : ""}>{formatInfo(info)}</span></p>
-            <button onClick={() => onClick(signed, info)} className='text-black'>{signed ? "Unsign" : "Sign" }</button>
-            <button onClick={() => onRefresh(info)} className='text-black'>Sign and refresh</button>
+            <div className='flex flex-row gap-5 mt-auto w-full justify-between'>
+              <button onClick={() => onClick(signed, info)} className={`${signed ? "text-red-800" : "text-green-500" }`}>{signed ? "Unsign" : "Sign" }</button>
+              <button onClick={() => onRefresh(info)} className='text-black'>Sign and refresh</button>
+            </div>
         </div>
     </li>
   )

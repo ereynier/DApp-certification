@@ -33,6 +33,10 @@ contract Students {
         return (students[_id].firstname, students[_id].lastname, students[_id].birthdate);
     }
 
+    function getStudentsIds() public view returns (uint[] memory) {
+        return studentsIds;
+    }
+
     function deleteStudent(uint256 _id) internal {
         delete students[_id];
         for (uint i = 0; i < studentsIds.length; i++) {

@@ -6,7 +6,7 @@ import Link from 'next/link';
 const contractAddress: `0x${string}` = process.env.CONTRACT_ADDRESS as `0x${string}`
 
 interface Props {
-    studentId: string
+    studentId: number
 }
 
 const List = ({studentId}: Props) => {
