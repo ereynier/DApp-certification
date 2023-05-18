@@ -89,12 +89,11 @@ const MultiSigCertif: React.FC<Props> = ({ userRole, setError, setInfo, setSucce
     const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault();
 
-        const myDate = birthdate.split("-").map((el) => parseInt(el, 10));
-        const newDate = new Date( myDate[2], myDate[0] - 1, myDate[1]).getTime();
+        const newDate = new Date(birthdate).getTime();
 
         console.log('Action: ', action);
         console.log('Firstname: ', firstname);
-        console.log('Birthdate: ', lastName);
+        console.log('Lastname: ', lastName);
         console.log(`Birthdate: ${birthdate} ${newDate}`);
         console.log('StudentId: ', studentId);
         

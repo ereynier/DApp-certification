@@ -28,9 +28,9 @@ contract Students {
         emit StudentAdded(_id, _firstname, _lastname, _birthdate);
     }
 
-    function getStudent(uint256 _id) public view returns (Student memory) {
+    function getStudent(uint256 _id) public view returns (string memory, string memory, uint256) {
         require(students[_id].id != 0, "Student doesn't exist");
-        return students[_id];
+        return (students[_id].firstname, students[_id].lastname, students[_id].birthdate);
     }
 
     function deleteStudent(uint256 _id) internal {

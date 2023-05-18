@@ -1,13 +1,13 @@
 "use client"
 
-import Certificate from './components/Certificate'
+import PromptID from './components/PromptID'
 
 
 const Certification = () => {
 
     return (
         <div>
-            <Certificate />
+            <PromptID />
         </div>
     )
 }

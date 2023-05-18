@@ -315,6 +315,11 @@ contract Certifications is AccessControl, MultiSigWithRole, Maths, Students, Add
         return certificatesByStudent[_id];
     }
 
+    function getCertificationById(bytes32 _id) public view returns(uint8, uint8, uint8, uint, uint) {
+        require(certificates[_id].validity == true, "This certificate doesn't exist");
+        return(uint8(certificates[_id].appreciation), uint8(certificates[_id].degree), uint8(certificates[_id].program), certificates[_id].creation_date, certificates[_id].stud_id);
+    }
+
     function getAllMultiSig(address signer) public view returns (bytes32[] memory, uint8[] memory,  string[] memory, bool[] memory) {
         string[] memory multiSigsInfo = new string[](multiSigIdCount);
         uint8[] memory multiSigsCount = new uint8[](multiSigIdCount);
