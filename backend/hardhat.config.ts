@@ -3,7 +3,7 @@ import "@nomicfoundation/hardhat-toolbox";
 import "dotenv/config";
 import "@typechain/hardhat";
 
-const { PRIVATE_KEY="", SEPOLIA_RPC_URL="", MUMBAI_RPC_URL="", ETHERSCAN_API_KEY="" } = process.env;
+const { PRIVATE_KEY="", SEPOLIA_RPC_URL="", MUMBAI_RPC_URL="", ETHERSCAN_API_KEY="", ZKEVM_TESTNET_RPC_URL="" } = process.env;
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -22,10 +22,10 @@ const config: HardhatUserConfig = {
       accounts: [PRIVATE_KEY],
       chainId: 11155111
     },
-    mumbai: {
-      url: MUMBAI_RPC_URL,
+    zkevm_testnet: {
+      url: ZKEVM_TESTNET_RPC_URL,
       accounts: [PRIVATE_KEY],
-      chainId: 80001
+      chainId: 1442
     },
     localhost: {
       url: "http://localhost:8545",
