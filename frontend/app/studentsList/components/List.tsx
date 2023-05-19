@@ -19,7 +19,7 @@ const List = () => {
             <div className='flex flex-col items-start justify-start mt-2'>
                 <ul className='max-w-md space-y-1 list-disc list-inside text-lg text-gray-900 dark:text-white'>
                     {studentsIds && (
-                        studentsIds.map((id) => (
+                        studentsIds.filter(id => id != 0).map((id) => (
                             <li key={id}>{id.toString()}</li>
                         ))
                     )}

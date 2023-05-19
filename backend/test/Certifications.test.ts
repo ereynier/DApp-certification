@@ -320,7 +320,14 @@ describe("Certifications", function () {
             await expect(contract.connect(this.addr2).getStudent(107)).to.be.revertedWith(/Student doesn't exist/);
         });
         it("Should get the student", async function () {
-            expect(await contract.connect(this.addr2).getStudent(106)).to.deep.equal([106, "Leo", "Expresso", 157]);
+            expect(await contract.connect(this.addr2).getStudent(106)).to.deep.equal(["Leo", "Expresso", 157]);
+        });
+    });
+
+    describe("getStudentsIds", function () {
+        it("Should get the students ids", async function () {
+            const ids = await contract.connect(this.addr2).getStudentsIds()
+            expect(ids.filter(id => id != 0).map(id => Number(id))).to.deep.equal([106, 105, 110]);
         });
     });
 
@@ -423,4 +430,41 @@ describe("Certifications", function () {
             expect(certificates).to.deep.equal([ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [106,3,2,1]), ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [106,3,0,1])]);
         });
     });
+
+    describe("getCertificationById", function () {
+        it("Should revert with message 'This certificate doesn't exist'", async function () {
+            await expect(contract.connect(this.addr2).getCertificationById(ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [107,3,2,1]))).to.be.revertedWith(/This certificate doesn't exist/);
+        });
+        it("Should get the certification attributes", async function () {
+            const certif = await contract.connect(this.addr2).getCertificationById(ethers.utils.solidityKeccak256(["uint", "uint8", "uint8", "uint8"], [106,3,2,1]))
+            expect(certif[0]).to.deep.equal(3);
+            expect(certif[1]).to.deep.equal(2);
+            expect(certif[2]).to.deep.equal(1);
+            expect(certif[4]).to.deep.equal(106);
+        });
+    });
+
+    describe("getRoleMembersNb", function () {
+        it("Should get the number of CERTIFIER_ADMIN", async function () {
+            expect(await contract.getRoleMembersNb(await contract.CERTIFIER_ADMIN())).to.deep.equal(3);
+        });
+        it("Should get the number of CERTIFIER", async function () {
+            expect(await contract.getRoleMembersNb(await contract.CERTIFIER())).to.deep.equal(2);
+        });
+    });
+
+    describe("getAllMultisig", function () {
+        it("Should get all multisig", async function () {
+            await contract.connect(this.addr3).certify(106, 0, 0, 0, true);
+            let multiSigs = await contract.getAllMultiSig(this.addr3.address)
+            expect(multiSigs[3][16]).to.deep.equal(true);
+            expect(multiSigs[2][16]).to.deep.equal("Certify 106 0 0 0");
+            expect(multiSigs[1][16]).to.deep.equal(1);
+            multiSigs = await contract.getAllMultiSig(this.owner.address)
+            expect(multiSigs[3][16]).to.deep.equal(false);
+            expect(multiSigs[2][16]).to.deep.equal("Certify 106 0 0 0");
+            expect(multiSigs[1][16]).to.deep.equal(1);
+        });
+    });
+
 });
