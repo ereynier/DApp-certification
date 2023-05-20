@@ -78,7 +78,7 @@ const SingleMultiSig: React.FC<Props> = ({userRole, multiSigRole, count, signed,
     } else if (info.includes("Revoke")) {
         const role = info.split(" ")[1]
         const target = info.split(" ")[2]
-        return `Revoke ${role} from ${target}`
+        return `Revoke ${role} from ${target.substring(0,5)}...`
     }
     return info
   }
