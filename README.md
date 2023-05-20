@@ -63,7 +63,7 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Acknowledgements
 
-We would like to express our gratitude to the developers and contributors of the following technologies, frameworks, and libraries that made this project possible:
+I would like to express my gratitude to the developers and contributors of the following technologies, frameworks, and libraries that made this project possible:
 
 - [Solidity](https://github.com/ethereum/solidity)
 - [OpenZeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts)
@@ -73,4 +73,4 @@ We would like to express our gratitude to the developers and contributors of the
 
 ## Contact
 
-For any inquiries or further information, please contact [ereynier.42@gmail.com](mailto:ereynier.42@gmail.com).
+For any inquiries or further information, please contact me at [ereynier.42@gmail.com](mailto:ereynier.42@gmail.com).
