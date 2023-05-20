@@ -16,7 +16,7 @@ import { infuraProvider } from 'wagmi/providers/infura';
 
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-    [hardhat, polygonZkEvmTestnet],
+    [polygonZkEvmTestnet],
     [publicProvider()],
   )
 

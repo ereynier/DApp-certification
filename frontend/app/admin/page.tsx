@@ -15,7 +15,7 @@ import { alchemyProvider } from 'wagmi/providers/alchemy';
 import AdminConnect from './components/AdminMain';
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-    [hardhat, polygonZkEvmTestnet],
+    [polygonZkEvmTestnet],
     [publicProvider()],
   )
 
