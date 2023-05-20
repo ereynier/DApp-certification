@@ -37,6 +37,26 @@ Storing certificates on the blockchain offers several advantages:
 - DApp URL: [https://certifications.ereynier.me](https://certifications.ereynier.me)
 - Contract Address: [0xfd262387B87161138747692c72A5F47765cC79FD](https://testnet-zkevm.polygonscan.com/address/0xfd262387B87161138747692c72A5F47765cC79FD) (Polygon ZkEVM Testnet)
 
+## Screenshots
+
+Here are some screenshots of the DApp's user interface:
+
+1. Certificate View:
+
+![Certificate View](img/certificate.png)
+
+2. Admin Panel - Role Granting:
+
+![Admin Panel - Role Granting](img/admin.png)
+
+3. Certifier - Certificate Creation:
+
+![Certifier - Certificate Creation](img/certifier.png)
+
+4. Certificates for Student ID:
+
+![Certificates for Student ID](img/student_certificates.png)
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
