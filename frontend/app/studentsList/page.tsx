@@ -8,16 +8,16 @@ import {
 } from '@rainbow-me/rainbowkit';
 
 import { configureChains, createConfig,useContractRead, WagmiConfig } from 'wagmi';
-import { hardhat, sepolia } from 'wagmi/chains';
+import { hardhat, polygonZkEvmTestnet } from 'wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
 import { infuraProvider } from 'wagmi/providers/infura';
 import List from './components/List';
 
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-    [hardhat, sepolia],
-    [publicProvider()],
-  )
+  [hardhat, polygonZkEvmTestnet],
+  [publicProvider()],
+)
 
 const wagmiConfig = createConfig({
     autoConnect: false,

@@ -10,13 +10,13 @@ import {
 } from '@rainbow-me/rainbowkit';
 
 import { configureChains, createConfig,useContractRead, WagmiConfig } from 'wagmi';
-import { hardhat, sepolia } from 'wagmi/chains';
+import { hardhat, polygonZkEvmTestnet } from 'wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
 import { infuraProvider } from 'wagmi/providers/infura';
 
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-    [hardhat, sepolia],
+    [hardhat, polygonZkEvmTestnet],
     [publicProvider()],
   )
 

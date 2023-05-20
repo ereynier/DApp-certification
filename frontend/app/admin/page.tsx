@@ -8,14 +8,14 @@ import {
 } from '@rainbow-me/rainbowkit';
 
 import { configureChains, createConfig, useAccount, useContractRead, WagmiConfig } from 'wagmi';
-import { hardhat, sepolia } from 'wagmi/chains';
+import { hardhat, sepolia, polygonZkEvmTestnet } from 'wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
-import { infuraProvider } from 'wagmi/providers/infura';
+import { alchemyProvider } from 'wagmi/providers/alchemy';
 
 import AdminConnect from './components/AdminMain';
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-    [hardhat, sepolia],
+    [hardhat, polygonZkEvmTestnet],
     [publicProvider()],
   )
 
