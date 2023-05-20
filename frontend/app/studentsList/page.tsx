@@ -15,7 +15,7 @@ import List from './components/List';
 
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [hardhat, polygonZkEvmTestnet],
+  [polygonZkEvmTestnet],
   [publicProvider()],
 )
 
